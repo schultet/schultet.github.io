@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mein Blog</title>
+<meta name="description" content="Notizen zu Software, Daten und allem dazwischen.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/blog.css">
+</head>
+<body>
+
+  <header class="site-head">
+    <div class="kicker">Notizen &amp; Gedanken</div>
+    <h1><a href="index.html">Mein Blog</a></h1>
+    <p class="tagline">Notizen zu Software, Daten und allem dazwischen.</p>
+  </header>
+  <div class="rule-x"></div>
+
+  <div class="wrap">
+    <div class="controls">
+      <div class="search">
+        <span class="ic">&#9906;</span>
+        <input id="q" type="search" placeholder="Beitr&auml;ge durchsuchen &hellip;" autocomplete="off" aria-label="Beitr&auml;ge durchsuchen">
+      </div>
+      <div class="tagbar" id="tagbar">
+        <span class="lab">Tags</span>
+        <!-- Tag-Buttons werden per JavaScript eingefuegt -->
+        <button class="clearbtn" id="clear" hidden>Filter zur&uuml;cksetzen</button>
+      </div>
+    </div>
+
+    <p class="count" id="count"></p>
+    <ul class="posts" id="list"></ul>
+    <p class="empty" id="empty" hidden>Keine Beitr&auml;ge gefunden. Versuch ein anderes Stichwort oder Tag.</p>
+  </div>
+
+  <div class="wrap">
+    <footer class="site-foot">
+      &copy; <span id="year"></span> Mein Blog &middot; gebaut mit HTML, CSS und etwas JavaScript.
+      <span class="mono">Statische Seite &middot; gehostet auf GitHub Pages.</span>
+    </footer>
+  </div>
+
+<script>
+/* =====================================================================
+   HIER pflegst du deine Beitraege  ·  ein Objekt pro Artikel.
+   - title   : Ueberschrift in der Liste
+   - date    : "JJJJ-MM-TT"  (wird automatisch sortiert, neueste zuerst)
+   - url     : Pfad zur HTML-Datei des Beitrags
+   - tags    : Liste von Schlagworten (frei waehlbar)
+   - excerpt : 1-2 Saetze Vorschau
+   Neuen Beitrag hinzufuegen = neue HTML-Datei in /posts anlegen
+   und hier oben EIN Objekt ergaenzen. Mehr nicht.
+   ===================================================================== */
+const posts = [
+  {
+    title: "Willkommen auf meinem Blog",
+    date: "2026-06-08",
+    url: "posts/2026-06-08-willkommen.html",
+    tags: ["Meta"],
+    excerpt: "Warum ich diesen Blog ganz ohne Framework betreibe \u2013 nur HTML, CSS und ein bisschen JavaScript."
+  },
+  {
+    title: "Was ich aus \u201eDesigning Data-Intensive Applications\u201c gelernt habe",
+    date: "2026-06-05",
+    url: "posts/2026-06-05-ddia-gelernt.html",
+    tags: ["Buchnotizen", "Verteilte Systeme", "Datenbanken"],
+    excerpt: "Drei Ideen aus Kleppmanns Buch, die meine Sicht auf Datensysteme ver\u00e4ndert haben."
+  },
+  {
+    title: "Eine statische Website ohne Generator",
+    date: "2026-05-28",
+    url: "posts/2026-05-28-statische-seiten.html",
+    tags: ["Web", "Tutorial"],
+    excerpt: "Wie diese Seite funktioniert: von Hand verlinkte HTML-Dateien mit Filter und Tags."
+  },
+  {
+    title: "B-Trees und LSM-Trees, einfach erkl\u00e4rt",
+    date: "2026-05-15",
+    url: "posts/2026-05-15-btrees-lsm.html",
+    tags: ["Datenbanken", "Buchnotizen"],
+    excerpt: "Die zwei gro\u00dfen Familien von Speicher-Engines \u2013 und wann welche die bessere Wahl ist."
+  }
+];
+
+/* ---------- ab hier nichts mehr aendern ---------- */
+const listEl  = document.getElementById('list');
+const tagbar  = document.getElementById('tagbar');
+const clearEl = document.getElementById('clear');
+const countEl = document.getElementById('count');
+const emptyEl = document.getElementById('empty');
+const qEl     = document.getElementById('q');
+document.getElementById('year').textContent = new Date().getFullYear();
+
+let query = "";
+const activeTags = new Set();
+
+// neueste zuerst
+posts.sort((a, b) => b.date.localeCompare(a.date));
+
+// alle Tags einsammeln (alphabetisch)
+const allTags = [...new Set(posts.flatMap(p => p.tags))].sort((a, b) => a.localeCompare(b, 'de'));
+allTags.forEach(tag => {
+  const b = document.createElement('button');
+  b.className = 'tag';
+  b.textContent = tag;
+  b.addEventListener('click', () => {
+    activeTags.has(tag) ? activeTags.delete(tag) : activeTags.add(tag);
+    b.classList.toggle('on');
+    render();
+  });
+  tagbar.insertBefore(b, clearEl);
+});
+
+clearEl.addEventListener('click', () => {
+  activeTags.clear();
+  query = "";
+  qEl.value = "";
+  document.querySelectorAll('.tag.on').forEach(t => t.classList.remove('on'));
+  render();
+});
+
+qEl.addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); render(); });
+
+function fmtDate(iso){
+  return new Date(iso + "T00:00:00").toLocaleDateString('de-DE',
+    { day:'2-digit', month:'long', year:'numeric' });
+}
+
+function matches(p){
+  // Tag-Filter: zeige Beitrag, wenn er JEDEN aktiven Tag hat
+  for (const t of activeTags) if (!p.tags.includes(t)) return false;
+  // Textsuche ueber Titel, Vorschau und Tags
+  if (query){
+    const hay = (p.title + " " + p.excerpt + " " + p.tags.join(" ")).toLowerCase();
+    if (!hay.includes(query)) return false;
+  }
+  return true;
+}
+
+function render(){
+  const shown = posts.filter(matches);
+  listEl.innerHTML = shown.map(p => `
+    <li class="post-row">
+      <a class="post-link" href="${p.url}">
+        <span class="date">${fmtDate(p.date)}</span>
+        <h2>${p.title}</h2>
+        <p class="excerpt">${p.excerpt}</p>
+        <div class="tags">${p.tags.map(t => `<span class="t">${t}</span>`).join('')}</div>
+      </a>
+    </li>`).join('');
+
+  emptyEl.hidden = shown.length !== 0;
+  const filtering = query || activeTags.size;
+  clearEl.hidden = !filtering;
+  countEl.textContent = filtering
+    ? `${shown.length} von ${posts.length} Beitr\u00e4gen`
+    : `${posts.length} Beitr\u00e4ge`;
+}
+
+render();
+</script>
+</body>
+</html>
