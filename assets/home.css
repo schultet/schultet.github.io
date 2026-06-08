@@ -1,0 +1,183 @@
+/* =====================================================================
+   home.css  ·  Stylesheet NUR fuer die Startseite (index.html).
+   Modernes, helles/dunkles Design, getrennt vom Buch-Stil (blog.css).
+   Schriften selbst gehostet aus assets/fonts/ (Inter + JetBrains Mono).
+   ===================================================================== */
+
+@font-face{
+  font-family:'Inter';
+  font-style:normal;
+  font-weight:400 700;
+  font-display:swap;
+  src:url('fonts/inter-normal-latin.woff2') format('woff2');
+  unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face{
+  font-family:'Inter';
+  font-style:normal;
+  font-weight:400 700;
+  font-display:swap;
+  src:url('fonts/inter-normal-latin-ext.woff2') format('woff2');
+  unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face{
+  font-family:'JetBrains Mono';
+  font-style:normal;
+  font-weight:400 700;
+  font-display:swap;
+  src:url('fonts/jetbrainsmono-normal-latin.woff2') format('woff2');
+  unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face{
+  font-family:'JetBrains Mono';
+  font-style:normal;
+  font-weight:400 700;
+  font-display:swap;
+  src:url('fonts/jetbrainsmono-normal-latin-ext.woff2') format('woff2');
+  unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* ---------- Design-Tokens (hell) ---------- */
+:root{
+  color-scheme:light dark;
+  --bg:#fcfcfb;
+  --surface:#ffffff;
+  --text:#18181b;
+  --muted:#52525b;
+  --faint:#8a8a93;
+  --border:#e7e5e4;
+  --border-strong:#d6d3d1;
+  --accent:#4f46e5;
+  --accent-text:#4f46e5;
+  --accent-soft:rgba(79,70,229,.08);
+  --ring:rgba(79,70,229,.35);
+  --maxw:46rem;
+  --sans:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,"SF Mono",Menlo,monospace;
+}
+
+/* ---------- Design-Tokens (dunkel) ---------- */
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0b0b0c;
+    --surface:#141416;
+    --text:#f4f4f5;
+    --muted:#a1a1aa;
+    --faint:#71717a;
+    --border:#26262a;
+    --border-strong:#34343a;
+    --accent:#a5b4fc;
+    --accent-text:#a5b4fc;
+    --accent-soft:rgba(165,180,252,.12);
+    --ring:rgba(165,180,252,.40);
+  }
+}
+
+/* ---------- Basis ---------- */
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:1.0625rem;
+  line-height:1.6;
+  font-feature-settings:"cv05","ss01";
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+a{color:var(--accent-text);text-underline-offset:2px;text-decoration-thickness:1px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.container{max-width:var(--maxw);margin:0 auto;padding:0 1.5rem}
+
+/* ---------- Kopf / Masthead ---------- */
+.masthead{padding:clamp(3rem,9vw,5.5rem) 0 2rem}
+.masthead .kicker{
+  font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--accent-text);margin:0 0 .9rem;font-weight:500;
+}
+.masthead h1{
+  font-size:clamp(2.4rem,7vw,3.6rem);line-height:1.02;letter-spacing:-.03em;
+  font-weight:700;margin:0;
+}
+.masthead h1 a{color:inherit;text-decoration:none}
+.masthead .lede{
+  margin:1rem 0 0;max-width:34rem;font-size:1.1rem;color:var(--muted);line-height:1.55;
+}
+
+/* ---------- Steuerung: Suche + Tags ---------- */
+.controls{display:block;margin:2.25rem 0 .5rem}
+.searchbox{position:relative;margin-bottom:1rem}
+.searchbox svg{
+  position:absolute;left:.95rem;top:50%;transform:translateY(-50%);
+  width:1.05rem;height:1.05rem;color:var(--faint);pointer-events:none;
+}
+.searchbox input{
+  width:100%;font:inherit;font-size:1rem;color:var(--text);
+  background:var(--surface);border:1px solid var(--border-strong);border-radius:.7rem;
+  padding:.72rem .9rem .72rem 2.5rem;transition:border-color .15s,box-shadow .15s;
+}
+.searchbox input::placeholder{color:var(--faint)}
+.searchbox input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--ring)}
+
+.tagbar{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+.tagbar .lab{
+  font-family:var(--mono);font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--faint);margin-right:.15rem;
+}
+.tag{
+  font-family:var(--mono);font-size:.75rem;cursor:pointer;color:var(--muted);
+  background:transparent;border:1px solid var(--border-strong);border-radius:2rem;
+  padding:.3rem .8rem;transition:all .15s;
+}
+.tag:hover{border-color:var(--accent);color:var(--text)}
+.tag.on{background:var(--accent);border-color:var(--accent);color:#fff}
+@media (prefers-color-scheme:dark){.tag.on{color:#0b0b0c}}
+.clearbtn{
+  font-family:var(--mono);font-size:.72rem;background:none;border:none;cursor:pointer;
+  color:var(--accent-text);padding:.3rem .25rem;text-decoration:underline;text-underline-offset:2px;
+}
+.clearbtn[hidden]{display:none}
+
+.count{font-family:var(--mono);font-size:.72rem;color:var(--faint);margin:1.5rem 0 0}
+
+/* ---------- Notizen-Liste ---------- */
+.notes{list-style:none;margin:.25rem 0 0;padding:0}
+.note{border-top:1px solid var(--border)}
+.notes .note:last-child{border-bottom:1px solid var(--border)}
+.note a{
+  display:block;text-decoration:none;color:inherit;
+  padding:1.5rem 0;border-radius:.5rem;transition:background-color .15s;
+}
+.note a:hover,.note a:focus-visible{background:var(--accent-soft);outline:none}
+.note__meta{
+  display:flex;align-items:center;gap:.6rem;
+  font-family:var(--mono);font-size:.72rem;letter-spacing:.04em;color:var(--faint);
+}
+.note__title{
+  font-size:1.4rem;line-height:1.2;letter-spacing:-.015em;font-weight:600;
+  margin:.5rem 0 0;display:flex;align-items:baseline;gap:.5rem;
+}
+.note a:hover .note__title,.note a:focus-visible .note__title{color:var(--accent-text)}
+.note__title .arrow{color:var(--accent-text);opacity:0;transform:translateX(-.25rem);transition:opacity .15s,transform .15s}
+.note a:hover .note__title .arrow,.note a:focus-visible .note__title .arrow{opacity:1;transform:translateX(0)}
+.note__excerpt{margin:.5rem 0 0;color:var(--muted);max-width:42rem}
+.note__tags{display:flex;flex-wrap:wrap;gap:.4rem;margin:.85rem 0 0;padding:0;list-style:none}
+.note__tags li{
+  font-family:var(--mono);font-size:.68rem;color:var(--muted);
+  background:var(--surface);border:1px solid var(--border);border-radius:.4rem;padding:.15rem .5rem;
+}
+
+.empty{color:var(--faint);text-align:center;padding:3rem 0;border-top:1px solid var(--border)}
+
+/* ---------- Fuss ---------- */
+.site-foot{
+  border-top:1px solid var(--border);margin-top:4rem;padding:1.75rem 0 4rem;
+  font-size:.85rem;color:var(--faint);
+}
+.site-foot .foot-nav{display:flex;flex-wrap:wrap;gap:.5rem 1.25rem;margin-top:.9rem;font-family:var(--mono);font-size:.72rem;letter-spacing:.04em;text-transform:uppercase}
+.site-foot .foot-nav a{color:var(--muted);text-decoration:none}
+.site-foot .foot-nav a:hover{color:var(--accent-text)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}

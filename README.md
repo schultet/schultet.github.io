@@ -1,15 +1,21 @@
-# Mein Blog – Anleitung
+# Append-Only – Anleitung
 
-Eine statische Blog-Seite ohne Generator: nur HTML, CSS und etwas JavaScript.
-Beiträge lassen sich durchsuchen und nach Tags filtern.
+Eine statische Notizsammlung ohne Generator: nur HTML, CSS und etwas JavaScript.
+Einträge lassen sich durchsuchen und nach Tags filtern. Jede Seite darf ihr eigenes
+Design haben — die Startseite ist modern (hell/dunkel), die Buch-/Beitragsseiten nutzen
+den wärmeren „Papier"-Stil.
 
 ## Ordnerstruktur
 
 ```
-blog/
-├── index.html                  ← Startseite mit Beitragsliste + Filter/Tags
+notes/
+├── index.html                  ← Startseite: modernes Design (assets/home.css), Liste + Filter
+├── impressum.html              ← Impressum (Platzhalter ausfüllen)
+├── datenschutz.html            ← Datenschutzerklärung (Platzhalter ausfüllen)
 ├── assets/
-│   └── blog.css                ← gemeinsames Design (Farben/Schriften hier ändern)
+│   ├── home.css                ← Stil NUR der Startseite (Inter, hell/dunkel)
+│   ├── blog.css                ← „Papier"-Stil der Beitragsseiten (Fraunces/Newsreader)
+│   └── fonts/                  ← selbst gehostete Schriften (.woff2), keine Google-CDN
 └── posts/
     ├── _template.html          ← leere Vorlage zum Kopieren
     ├── 2026-06-08-willkommen.html
@@ -77,6 +83,38 @@ Eigene Domain möglich über Settings → Pages → Custom domain.
 
 ## Design anpassen
 
-Alle Farben und Schriften stehen ganz oben in `assets/blog.css` unter `:root { … }`.
-Eine Variable ändern wirkt auf die ganze Seite. Schriften kommen von Google Fonts
-(im `<head>` jeder Seite verlinkt) – tauschbar gegen jede andere Schrift.
+Es gibt zwei getrennte Stylesheets, beide mit ihren Design-Variablen ganz oben unter
+`:root { … }`:
+
+- **`assets/home.css`** — nur die Startseite. Modernes, schlichtes Design in **Inter**,
+  mit automatischem Hell-/Dunkelmodus über `prefers-color-scheme`. Farben/Abstände als
+  CSS-Variablen (hell in `:root`, dunkel im `@media (prefers-color-scheme:dark)`-Block).
+- **`assets/blog.css`** — die Beitragsseiten im wärmeren „Papier"-Stil
+  (**Fraunces**/**Newsreader**). Farben hier ebenfalls oben unter `:root`.
+
+Eine Variable ändern wirkt auf die jeweils zugehörigen Seiten.
+
+## Schriften (selbst gehostet)
+
+Keine Schrift kommt mehr von einer Google-CDN; alle liegen als `.woff2`-Dateien
+(Subsets `latin` + `latin-ext`) in `assets/fonts/`. Das vermeidet eine Verbindung zu
+Google beim Seitenaufruf (siehe Datenschutz) und macht die Seite offline-fähig. Die
+`@font-face`-Regeln stehen jeweils oben im passenden Stylesheet:
+
+- **Startseite:** Inter + JetBrains Mono → in `assets/home.css`.
+- **Beitragsseiten:** Fraunces, Newsreader, JetBrains Mono → in `assets/blog.css`.
+
+> Sonderfall: `posts/designing-data-intensive-applications.html` bringt sein eigenes
+> `<style>` mit (statt `blog.css` zu verlinken); dort stehen die `@font-face`-Regeln
+> direkt im Kopf der Datei (Pfade `../assets/fonts/…`). Wer dort die Schriften wechselt,
+> muss diese Stelle separat anpassen.
+
+Schriften wechseln: neue `.woff2`-Dateien in `assets/fonts/` legen und die
+`@font-face`-Blöcke (Dateinamen + `font-family`) im jeweiligen Stylesheet anpassen.
+
+## Impressum & Datenschutz
+
+`impressum.html` und `datenschutz.html` liegen im Wurzelverzeichnis und sind im Footer
+jeder Seite verlinkt. Beide enthalten **Platzhalter** (rot/gestrichelt hervorgehoben),
+die du mit deinen echten Angaben bzw. mit Text aus einem Generator oder von einer
+Anwältin / einem Anwalt füllst. Die Vorlagen sind kein Rechtsrat.
