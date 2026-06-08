@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Designing Data-Intensive Applications – Buchfuehrer · Mein Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f4ece0;
+    --paper-2:#ece1d2;
+    --ink:#221b16;
+    --ink-soft:#4a3f36;
+    --ink-faint:#7a6c5d;
+    --rust:#b6411d;
+    --rust-deep:#8f2f12;
+    --teal:#2c5d57;
+    --gold:#b9892f;
+    --rule:#cdbfab;
+    --rule-soft:#ddd0bd;
+    --card:#fbf6ee;
+    --shadow:0 1px 0 #fff6 inset, 0 10px 30px -18px #2c1f1340;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:
+      radial-gradient(120% 80% at 80% -10%, #fbf4e8 0%, transparent 55%),
+      var(--paper);
+    color:var(--ink);
+    font-family:"Newsreader",Georgia,serif;
+    font-size:18px;
+    line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.045;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode:multiply;
+  }
+  /* progress bar */
+  #progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--rust),var(--gold));z-index:1000;transition:width .12s linear}
+
+  a{color:inherit}
+  .mono{font-family:"JetBrains Mono",monospace}
+
+  .layout{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:288px 1fr;gap:0}
+
+  /* ---------- SIDEBAR ---------- */
+  aside{
+    position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;
+    padding:34px 26px 60px 30px;border-right:1px solid var(--rule);
+    background:linear-gradient(180deg,var(--paper-2),transparent 30%);
+  }
+  aside::-webkit-scrollbar{width:8px}
+  aside::-webkit-scrollbar-thumb{background:var(--rule);border-radius:8px}
+  .brand{font-family:"Fraunces",serif;font-weight:900;font-size:21px;line-height:1.05;letter-spacing:-.01em}
+  .brand .small{display:block;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--rust);font-family:"JetBrains Mono",monospace;font-weight:500;margin-bottom:8px}
+  nav{margin-top:26px;font-size:14.5px}
+  nav .part-label{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);margin:22px 0 8px;border-top:1px dashed var(--rule);padding-top:14px}
+  nav a{display:flex;gap:9px;align-items:baseline;text-decoration:none;color:var(--ink-soft);padding:5px 8px;border-radius:6px;transition:all .15s;line-height:1.25}
+  nav a .num{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--rust);min-width:18px;font-weight:500}
+  nav a:hover{background:#fff7;color:var(--ink)}
+  nav a.active{background:var(--ink);color:var(--paper)}
+  nav a.active .num{color:var(--gold)}
+  .aside-foot{margin-top:26px;font-size:12px;color:var(--ink-faint);line-height:1.5;border-top:1px dashed var(--rule);padding-top:14px}
+
+  /* ---------- MAIN ---------- */
+  main{padding:0 clamp(24px,5vw,76px) 120px}
+
+  /* blog post chrome (backlink + meta + tags), in the book-guide theme */
+  .backlink{display:inline-flex;gap:7px;align-items:center;font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;color:var(--ink-faint);margin-top:30px}
+  .backlink:hover{color:var(--rust)}
+  .post-meta{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--rust);margin-top:8px}
+  .post-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:18px}
+  .post-tags .t{font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--ink-soft);background:var(--paper-2);border:1px solid var(--rule);border-radius:30px;padding:4px 11px}
+
+  header.hero{padding:74px 0 48px;border-bottom:2px solid var(--ink)}
+  .kicker{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--rust);font-weight:500}
+  h1.title{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(38px,6vw,68px);line-height:.96;letter-spacing:-.02em;margin:18px 0 6px}
+  h1.title em{font-style:italic;font-weight:500;color:var(--rust)}
+  .byline{font-size:19px;color:var(--ink-soft);font-style:italic}
+  .byline b{font-style:normal;font-weight:600;color:var(--ink)}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+  .chip{font-family:"JetBrains Mono",monospace;font-size:11.5px;letter-spacing:.04em;background:var(--paper-2);border:1px solid var(--rule);padding:5px 11px;border-radius:30px;color:var(--ink-soft)}
+
+  .howto{margin:42px 0 10px;background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--teal);border-radius:12px;padding:26px 30px;box-shadow:var(--shadow)}
+  .howto h2{font-family:"Fraunces",serif;font-size:23px;margin:0 0 10px;font-weight:600;letter-spacing:-.01em}
+  .howto p{margin:0 0 12px;font-size:16.5px;color:var(--ink-soft)}
+  .howto ol{margin:8px 0 0;padding-left:20px;font-size:16px;color:var(--ink-soft)}
+  .howto ol li{margin:6px 0}
+  .howto ol li b{color:var(--ink)}
+
+  /* part divider */
+  .part{margin:78px 0 8px;display:flex;align-items:flex-end;gap:22px;border-bottom:1px solid var(--rule);padding-bottom:16px}
+  .part .roman{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(54px,9vw,104px);line-height:.8;color:var(--rust);letter-spacing:-.04em;opacity:.92}
+  .part .pt-text .pt-label{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-faint)}
+  .part .pt-text h2{font-family:"Fraunces",serif;font-weight:600;font-size:clamp(26px,4vw,40px);margin:4px 0 0;line-height:1.02;letter-spacing:-.01em}
+  .part-blurb{font-size:16.5px;color:var(--ink-soft);font-style:italic;margin:14px 0 0;max-width:64ch}
+
+  /* chapter card */
+  .chapter{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:34px clamp(22px,3vw,40px);margin-top:30px;box-shadow:var(--shadow);position:relative;overflow:hidden;scroll-margin-top:18px}
+  .chapter::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(var(--rust),var(--gold))}
+  .ch-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
+  .ch-no{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--rust);font-weight:500}
+  .ch-title{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(25px,3.4vw,38px);line-height:1.02;letter-spacing:-.018em;margin:6px 0 0}
+  .pageref{font-family:"JetBrains Mono",monospace;font-size:12.5px;font-weight:500;white-space:nowrap;color:var(--ink);background:var(--paper-2);border:1px solid var(--rule);border-radius:8px;padding:7px 12px;align-self:flex-start}
+  .pageref span{color:var(--rust)}
+
+  .abstract{font-size:17.5px;color:var(--ink-soft);margin:18px 0 4px;max-width:72ch}
+  .abstract b{color:var(--ink);font-weight:600}
+
+  .takeaways{margin:20px 0 6px;background:var(--paper-2);border-radius:10px;padding:16px 20px;border:1px solid var(--rule-soft)}
+  .takeaways .lab{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);font-weight:700;margin-bottom:6px}
+  .takeaways ul{margin:0;padding-left:18px;font-size:15.5px;color:var(--ink-soft)}
+  .takeaways ul li{margin:5px 0}
+  .takeaways ul li b{color:var(--ink);font-weight:600}
+
+  .sections{margin-top:24px;border-top:1px dashed var(--rule)}
+  .sec{padding:16px 0;border-bottom:1px dashed var(--rule)}
+  .sec:last-child{border-bottom:none;padding-bottom:2px}
+  .sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:14px}
+  .sec-name{font-family:"Fraunces",serif;font-weight:600;font-size:19px;letter-spacing:-.01em}
+  .sec-pg{font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--ink-faint);white-space:nowrap}
+  .sec-desc{font-size:15.5px;color:var(--ink-soft);margin:5px 0 0;max-width:74ch}
+  .subs{list-style:none;margin:11px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px 8px}
+  .subs li{font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--ink-soft);background:var(--paper);border:1px solid var(--rule-soft);border-radius:7px;padding:4px 9px;display:inline-flex;gap:7px;align-items:baseline}
+  .subs li .p{color:var(--rust);font-weight:500}
+
+  footer{margin-top:80px;border-top:2px solid var(--ink);padding-top:26px;font-size:14px;color:var(--ink-faint)}
+  footer .ref{font-family:"JetBrains Mono",monospace;font-size:12px;margin-top:8px}
+
+  .totop{position:fixed;right:22px;bottom:22px;z-index:1000;background:var(--ink);color:var(--paper);border:none;width:46px;height:46px;border-radius:50%;font-size:18px;cursor:pointer;opacity:0;transform:translateY(12px);transition:.2s;box-shadow:0 8px 20px -8px #0008}
+  .totop.show{opacity:1;transform:none}
+  .totop:hover{background:var(--rust)}
+
+  @media (max-width:880px){
+    .layout{grid-template-columns:1fr}
+    aside{position:static;height:auto;border-right:none;border-bottom:1px solid var(--rule);max-height:none}
+    nav{columns:2;column-gap:18px}
+    nav .part-label{column-span:all}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="layout">
+
+<!-- ============ SIDEBAR ============ -->
+<aside>
+  <div class="brand"><span class="small">Lesefuehrer</span>Designing Data-Intensive Applications</div>
+  <nav id="toc">
+    <a href="#howto"><span class="num">·</span> Wie du diesen Fuehrer nutzt</a>
+
+    <div class="part-label">Teil I · Grundlagen</div>
+    <a href="#ch1"><span class="num">1</span> Reliable, Scalable, Maintainable</a>
+    <a href="#ch2"><span class="num">2</span> Data Models &amp; Query Languages</a>
+    <a href="#ch3"><span class="num">3</span> Storage and Retrieval</a>
+    <a href="#ch4"><span class="num">4</span> Encoding and Evolution</a>
+
+    <div class="part-label">Teil II · Verteilte Daten</div>
+    <a href="#ch5"><span class="num">5</span> Replication</a>
+    <a href="#ch6"><span class="num">6</span> Partitioning</a>
+    <a href="#ch7"><span class="num">7</span> Transactions</a>
+    <a href="#ch8"><span class="num">8</span> Trouble with Distributed Systems</a>
+    <a href="#ch9"><span class="num">9</span> Consistency and Consensus</a>
+
+    <div class="part-label">Teil III · Abgeleitete Daten</div>
+    <a href="#ch10"><span class="num">10</span> Batch Processing</a>
+    <a href="#ch11"><span class="num">11</span> Stream Processing</a>
+    <a href="#ch12"><span class="num">12</span> The Future of Data Systems</a>
+  </nav>
+  <div class="aside-foot">
+    Seitenangaben beziehen sich auf die gedruckten Buchseiten (1. Auflage, O&rsquo;Reilly 2017).
+  </div>
+</aside>
+
+<!-- ============ MAIN ============ -->
+<main>
+  <article class="post">
+  <a class="backlink" href="../index.html">&larr; Alle Beitr&auml;ge</a>
+  <header class="hero">
+    <div class="kicker">Buchfuehrer &middot; Vorbereitung aufs Lesen</div>
+    <div class="post-meta">08. Juni 2026</div>
+    <h1 class="title">Designing<br>Data-Intensive<br><em>Applications</em></h1>
+    <p class="byline">von <b>Martin Kleppmann</b> &middot; O&rsquo;Reilly, 2017 &middot; 3 Teile, 12 Kapitel</p>
+    <div class="meta-row">
+      <span class="chip">~590 Seiten</span>
+      <span class="chip">Zuverlaessigkeit</span>
+      <span class="chip">Skalierbarkeit</span>
+      <span class="chip">Wartbarkeit</span>
+      <span class="chip">Verteilte Systeme</span>
+    </div>
+    <div class="post-tags">
+      <span class="t">Buchnotizen</span>
+      <span class="t">Datenbanken</span>
+      <span class="t">Verteilte Systeme</span>
+    </div>
+
+    <div class="howto" id="howto">
+      <h2>Wie du diesen Fuehrer nutzt</h2>
+      <p>Du hast Recht: Wer zuerst die Struktur eines Sachbuchs ueberblickt &mdash; Teile, Kapitel, Zwischenueberschriften und deren Kernaussagen &mdash; liest danach deutlich effektiver. Das entspricht dem &bdquo;Survey&ldquo;-Schritt der klassischen SQ3R-Lesemethode.</p>
+      <p>Jedes Kapitel ist hier aufgebaut als: <b>Worum es geht</b> (Kurz-Zusammenfassung), <b>Beim Lesen achten auf</b> (Leitfragen, die du mitnimmst), und die vollstaendige Liste der <b>Kernabschnitte</b> mit ihren Unterabschnitten und Seitenzahlen.</p>
+      <ol>
+        <li><b>Erst ueberfliegen:</b> Lies diesen Fuehrer einmal komplett von oben nach unten, ohne ins Buch zu schauen &mdash; so entsteht die Landkarte im Kopf.</li>
+        <li><b>Dann gezielt lesen:</b> Vor jedem Kapitel kommst du hierher zurueck, liest die Zusammenfassung und die Leitfragen, und liest das Kapitel mit diesen Fragen im Hinterkopf.</li>
+        <li><b>Roter Faden:</b> Kleppmann baut das Buch von kleinen Bausteinen (ein Knoten) hin zu grossen verteilten Systemen (viele Knoten) auf. Behalte beim Lesen immer im Blick, welches der drei Leitziele &mdash; Zuverlaessigkeit, Skalierbarkeit, Wartbarkeit &mdash; gerade verhandelt wird.</li>
+      </ol>
+    </div>
+  </header>
+
+  <!-- ===================== PART I ===================== -->
+  <section class="part" id="part1">
+    <div class="roman">I</div>
+    <div class="pt-text">
+      <div class="pt-label">Teil I &middot; ab S. 1</div>
+      <h2>Foundations of Data Systems</h2>
+    </div>
+  </section>
+  <p class="part-blurb">Die Grundbegriffe fuer ein einzelnes System: Was bedeuten Zuverlaessigkeit, Skalierbarkeit und Wartbarkeit konkret? Welche Datenmodelle und Abfragesprachen gibt es, wie speichern Datenbanken intern, und wie kodiert man Daten so, dass sich Schemata mit der Zeit weiterentwickeln koennen?</p>
+
+  <!-- Chapter 1 -->
+  <article class="chapter" id="ch1">
+    <div class="ch-head">
+      <div>
+        <div class="ch-no">Kapitel 1 &middot; Teil I</div>
+        <h2 class="ch-title">Reliable, Scalable, and Maintainable Applications</h2>
+      </div>
+      <div class="pageref">S. <span>3</span>&ndash;22</div>
+    </div>
+    <p class="abstract">Das Fundament des ganzen Buches. Kleppmann definiert die drei Eigenschaften, an denen er jede spaetere Technologie misst: <b>Zuverlaessigkeit</b> (das System arbeitet trotz Fehlern korrekt), <b>Skalierbarkeit</b> (es bleibt unter wachsender Last beherrschbar) und <b>Wartbarkeit</b> (Menschen koennen es ueber Jahre betreiben und veraendern). Begriffe wie Last-Parameter, Perzentile bei Antwortzeiten und der Unterschied zwischen Fault und Failure werden hier sauber eingefuehrt.</p>
+    <div class="takeaways">
+      <div class="lab">Beim Lesen achten auf</div>
+      <ul>
+        <li>Warum unterscheidet Kleppmann zwischen <b>Fault</b> (Komponentenabweichung) und <b>Failure</b> (Systemausfall)?</li>
+        <li>Wieso sind <b>Perzentile</b> (p95, p99) aussagekraeftiger als der Durchschnitt der Antwortzeit?</li>
+        <li>Die drei Begriffe Reliability, Scalability, Maintainability sind das Vokabular fuer den Rest des Buches &mdash; gut verinnerlichen.</li>
+      </ul>
+    </div>
+    <div class="sections">
+      <div class="sec"><div class="sec-head"><div class="sec-name">Thinking About Data Systems</div><div class="sec-pg">S. 4</div></div><p class="sec-desc">Warum &bdquo;Datensystem&ldquo; heute eine Kombination aus Datenbank, Cache, Index, Queue usw. meint &mdash; nicht mehr nur eine einzelne Datenbank.</p></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Reliability</div><div class="sec-pg">S. 6</div></div><p class="sec-desc">Korrektes Arbeiten trotz Stoerungen. Fehlertypen und das Konzept fehlertoleranter Systeme.</p>
+        <ul class="subs"><li>Hardware Faults <span class="p">7</span></li><li>Software Errors <span class="p">8</span></li><li>Human Errors <span class="p">9</span></li><li>How Important Is Reliability? <span class="p">10</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Scalability</div><div class="sec-pg">S. 10</div></div><p class="sec-desc">Wie man Last und Leistung ueberhaupt beschreibt, bevor man ueber Skalierung redet.</p>
+        <ul class="subs"><li>Describing Load <span class="p">11</span></li><li>Describing Performance <span class="p">13</span></li><li>Approaches for Coping with Load <span class="p">17</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Maintainability</div><div class="sec-pg">S. 18</div></div><p class="sec-desc">Die drei Designprinzipien fuer langfristig wartbare Systeme.</p>
+        <ul class="subs"><li>Operability <span class="p">19</span></li><li>Simplicity <span class="p">20</span></li><li>Evolvability <span class="p">21</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Summary</div><div class="sec-pg">S. 22</div></div></div>
+    </div>
+  </article>
+
+  <!-- Chapter 2 -->
+  <article class="chapter" id="ch2">
+    <div class="ch-head">
+      <div>
+        <div class="ch-no">Kapitel 2 &middot; Teil I</div>
+        <h2 class="ch-title">Data Models and Query Languages</h2>
+      </div>
+      <div class="pageref">S. <span>27</span>&ndash;63</div>
+    </div>
+    <p class="abstract">Wie stellt man Daten ueberhaupt dar? Der zentrale Vergleich ist <b>relationales Modell</b> gegen <b>Dokumentenmodell</b> (NoSQL): wann passt welches, und warum haengt die Antwort an der Struktur der Beziehungen in deinen Daten (eins-zu-viele vs. viele-zu-viele). Dazu kommen Abfragesprachen &mdash; deklarativ vs. imperativ &mdash; und ein dritter Strang: <b>Graphmodelle</b> fuer stark vernetzte Daten, mit Cypher, SPARQL und Datalog.</p>
+    <div class="takeaways">
+      <div class="lab">Beim Lesen achten auf</div>
+      <ul>
+        <li>Der &bdquo;<b>Object-Relational Mismatch</b>&ldquo; und warum Dokumentenmodelle eins-zu-viele-Beziehungen elegant abbilden, aber bei viele-zu-viele schwaecheln.</li>
+        <li>Warum <b>deklarative</b> Abfragen (SQL) sich besser parallelisieren lassen als imperativer Code.</li>
+        <li>Wann ein <b>Graphmodell</b> die natuerliche Wahl ist &mdash; und wie es sich von Dokument/Relation unterscheidet.</li>
+      </ul>
+    </div>
+    <div class="sections">
+      <div class="sec"><div class="sec-head"><div class="sec-name">Relational Model Versus Document Model</div><div class="sec-pg">S. 28</div></div><p class="sec-desc">Geschichte und Trade-offs beider Lager; Schema-on-read vs. schema-on-write; Datenlokalitaet.</p>
+        <ul class="subs"><li>The Birth of NoSQL <span class="p">29</span></li><li>Object-Relational Mismatch <span class="p">29</span></li><li>Many-to-One &amp; Many-to-Many <span class="p">33</span></li><li>Repeating History? <span class="p">36</span></li><li>Relational vs Document Today <span class="p">38</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Query Languages for Data</div><div class="sec-pg">S. 42</div></div><p class="sec-desc">Deklarativ vs. imperativ; warum SQL gewann; MapReduce als Mittelweg.</p>
+        <ul class="subs"><li>Declarative Queries on the Web <span class="p">44</span></li><li>MapReduce Querying <span class="p">46</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Graph-Like Data Models</div><div class="sec-pg">S. 49</div></div><p class="sec-desc">Modelle fuer viele-zu-viele-Beziehungen und die zugehoerigen Abfragesprachen.</p>
+        <ul class="subs"><li>Property Graphs <span class="p">50</span></li><li>Cypher Query Language <span class="p">52</span></li><li>Graph Queries in SQL <span class="p">53</span></li><li>Triple-Stores &amp; SPARQL <span class="p">55</span></li><li>The Foundation: Datalog <span class="p">60</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Summary</div><div class="sec-pg">S. 63</div></div></div>
+    </div>
+  </article>
+
+  <!-- Chapter 3 -->
+  <article class="chapter" id="ch3">
+    <div class="ch-head">
+      <div>
+        <div class="ch-no">Kapitel 3 &middot; Teil I</div>
+        <h2 class="ch-title">Storage and Retrieval</h2>
+      </div>
+      <div class="pageref">S. <span>69</span>&ndash;103</div>
+    </div>
+    <p class="abstract">Was passiert <b>unter der Haube</b>, wenn eine Datenbank Daten schreibt und wieder findet? Zwei grosse Familien von Speicher-Engines werden gegenuebergestellt: <b>LSM-Trees</b> (log-strukturiert, schreiboptimiert, z. B. LevelDB/Cassandra) und <b>B-Trees</b> (der Klassiker hinter den meisten relationalen DBs). Danach der grosse Schnitt zwischen <b>OLTP</b> (transaktional) und <b>OLAP</b> (analytisch) und warum letztere zu spaltenorientierter Speicherung fuehrt.</p>
+    <div class="takeaways">
+      <div class="lab">Beim Lesen achten auf</div>
+      <ul>
+        <li>Der Trade-off <b>Lese- vs. Schreibverstaerkung</b>: warum LSM-Trees schneller schreiben, B-Trees oft schneller lesen.</li>
+        <li>Warum analytische Workloads (OLAP) <b>spaltenorientiert</b> speichern und stark komprimieren koennen.</li>
+        <li>Du musst keine eigene Engine bauen &mdash; aber das Wissen hilft, die richtige Datenbank fuer eine Last zu waehlen.</li>
+      </ul>
+    </div>
+    <div class="sections">
+      <div class="sec"><div class="sec-head"><div class="sec-name">Data Structures That Power Your Database</div><div class="sec-pg">S. 70</div></div><p class="sec-desc">Vom simplen Log ueber Hash-Indizes zu den beiden grossen Index-Familien.</p>
+        <ul class="subs"><li>Hash Indexes <span class="p">72</span></li><li>SSTables &amp; LSM-Trees <span class="p">76</span></li><li>B-Trees <span class="p">79</span></li><li>Comparing B-Trees &amp; LSM-Trees <span class="p">83</span></li><li>Other Indexing Structures <span class="p">85</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Transaction Processing or Analytics?</div><div class="sec-pg">S. 90</div></div><p class="sec-desc">OLTP vs. OLAP; Data Warehouses und ihre typischen Schemata.</p>
+        <ul class="subs"><li>Data Warehousing <span class="p">91</span></li><li>Stars &amp; Snowflakes <span class="p">93</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Column-Oriented Storage</div><div class="sec-pg">S. 95</div></div><p class="sec-desc">Warum Spaltenspeicherung Analytik beschleunigt; Kompression und Sortierung.</p>
+        <ul class="subs"><li>Column Compression <span class="p">97</span></li><li>Sort Order <span class="p">99</span></li><li>Writing to Column Storage <span class="p">101</span></li><li>Data Cubes &amp; Materialized Views <span class="p">101</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Summary</div><div class="sec-pg">S. 103</div></div></div>
+    </div>
+  </article>
+
+  <!-- Chapter 4 -->
+  <article class="chapter" id="ch4">
+    <div class="ch-head">
+      <div>
+        <div class="ch-no">Kapitel 4 &middot; Teil I</div>
+        <h2 class="ch-title">Encoding and Evolution</h2>
+      </div>
+      <div class="pageref">S. <span>111</span>&ndash;139</div>
+    </div>
+    <p class="abstract">Daten muessen kodiert werden, um gespeichert oder uebertragen zu werden &mdash; und Anwendungen aendern sich staendig. Dieses Kapitel dreht sich um <b>Schema-Evolution</b>: wie haelt man Code und Daten kompatibel, wenn alte und neue Versionen gleichzeitig laufen? Es vergleicht Formate (JSON, XML, Thrift, Protocol Buffers, Avro) und drei Wege, wie Daten zwischen Prozessen fliessen: ueber Datenbanken, ueber Services (REST/RPC) und ueber Nachrichten.</p>
+    <div class="takeaways">
+      <div class="lab">Beim Lesen achten auf</div>
+      <ul>
+        <li><b>Vorwaerts- und Rueckwaertskompatibilitaet</b> &mdash; das Schluesselkonzept, das jedes laufende System ohne Komplettstillstand updatebar macht.</li>
+        <li>Warum binaere Schema-Formate (Avro, Protobuf) gegenueber JSON Vorteile bei Groesse und Evolution haben.</li>
+        <li>Dieses Kapitel ist die Bruecke zu Teil II: Dataflow zwischen verteilten Komponenten.</li>
+      </ul>
+    </div>
+    <div class="sections">
+      <div class="sec"><div class="sec-head"><div class="sec-name">Formats for Encoding Data</div><div class="sec-pg">S. 112</div></div><p class="sec-desc">Textuelle vs. binaere Formate und wie sie Schemaaenderungen verkraften.</p>
+        <ul class="subs"><li>Language-Specific Formats <span class="p">113</span></li><li>JSON, XML &amp; Binary Variants <span class="p">114</span></li><li>Thrift &amp; Protocol Buffers <span class="p">117</span></li><li>Avro <span class="p">122</span></li><li>The Merits of Schemas <span class="p">127</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Modes of Dataflow</div><div class="sec-pg">S. 128</div></div><p class="sec-desc">Drei Wege, wie Daten zwischen Prozessen wandern, jeweils mit eigenen Kompatibilitaetsfragen.</p>
+        <ul class="subs"><li>Through Databases <span class="p">129</span></li><li>Through Services: REST &amp; RPC <span class="p">131</span></li><li>Message-Passing Dataflow <span class="p">136</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Summary</div><div class="sec-pg">S. 139</div></div></div>
+    </div>
+  </article>
+
+  <!-- ===================== PART II ===================== -->
+  <section class="part" id="part2">
+    <div class="roman">II</div>
+    <div class="pt-text">
+      <div class="pt-label">Teil II &middot; ab S. 145</div>
+      <h2>Distributed Data</h2>
+    </div>
+  </section>
+  <p class="part-blurb">Sobald Daten auf mehrere Maschinen verteilt werden, aendert sich alles. Dieser Teil baut systematisch auf: Daten ueber Knoten kopieren (Replikation), Daten aufteilen (Partitionierung), Korrektheit garantieren (Transaktionen) &mdash; und dann die harte Realitaet, dass Netzwerke, Uhren und Knoten unzuverlaessig sind, was in der Theorie von Konsistenz und Konsens muendet.</p>
+
+  <!-- Chapter 5 -->
+  <article class="chapter" id="ch5">
+    <div class="ch-head">
+      <div>
+        <div class="ch-no">Kapitel 5 &middot; Teil II</div>
+        <h2 class="ch-title">Replication</h2>
+      </div>
+      <div class="pageref">S. <span>151</span>&ndash;192</div>
+    </div>
+    <p class="abstract">Dieselben Daten auf mehreren Knoten halten &mdash; fuer Ausfallsicherheit, Naehe zum Nutzer und Lastverteilung. Drei Ansaetze werden ausfuehrlich behandelt: <b>Single-Leader</b> (ein Knoten nimmt Schreibzugriffe an), <b>Multi-Leader</b> (mehrere) und <b>Leaderless</b> (z. B. Dynamo-Stil). Der Kern des Kapitels ist der Umgang mit <b>Replication Lag</b> und den daraus folgenden Konsistenzanomalien.</p>
+    <div class="takeaways">
+      <div class="lab">Beim Lesen achten auf</div>
+      <ul>
+        <li>Die Konsistenzgarantien <b>read-your-writes</b>, <b>monotonic reads</b> und <b>consistent prefix reads</b> &mdash; was schiefgeht, wenn sie fehlen.</li>
+        <li>Synchron vs. asynchron: der Trade-off zwischen Haltbarkeit und Latenz.</li>
+        <li>Wie <b>Quorums</b> und Konfliktaufloesung (z. B. Versionsvektoren) bei leaderless Replikation funktionieren.</li>
+      </ul>
+    </div>
+    <div class="sections">
+      <div class="sec"><div class="sec-head"><div class="sec-name">Leaders and Followers</div><div class="sec-pg">S. 152</div></div>
+        <ul class="subs"><li>Sync vs Async Replication <span class="p">153</span></li><li>Setting Up New Followers <span class="p">155</span></li><li>Handling Node Outages <span class="p">156</span></li><li>Replication Logs <span class="p">158</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Problems with Replication Lag</div><div class="sec-pg">S. 161</div></div><p class="sec-desc">Die zentralen Konsistenzanomalien bei asynchroner Replikation.</p>
+        <ul class="subs"><li>Reading Your Own Writes <span class="p">162</span></li><li>Monotonic Reads <span class="p">164</span></li><li>Consistent Prefix Reads <span class="p">165</span></li><li>Solutions <span class="p">167</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Multi-Leader Replication</div><div class="sec-pg">S. 168</div></div>
+        <ul class="subs"><li>Use Cases <span class="p">168</span></li><li>Handling Write Conflicts <span class="p">171</span></li><li>Topologies <span class="p">175</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Leaderless Replication</div><div class="sec-pg">S. 177</div></div>
+        <ul class="subs"><li>Writing When a Node Is Down <span class="p">177</span></li><li>Quorum Consistency Limits <span class="p">181</span></li><li>Sloppy Quorums &amp; Hinted Handoff <span class="p">183</span></li><li>Detecting Concurrent Writes <span class="p">184</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Summary</div><div class="sec-pg">S. 192</div></div></div>
+    </div>
+  </article>
+
+  <!-- Chapter 6 -->
+  <article class="chapter" id="ch6">
+    <div class="ch-head">
+      <div>
+        <div class="ch-no">Kapitel 6 &middot; Teil II</div>
+        <h2 class="ch-title">Partitioning</h2>
+      </div>
+      <div class="pageref">S. <span>199</span>&ndash;216</div>
+    </div>
+    <p class="abstract">Wenn ein Datensatz zu gross fuer einen Knoten ist, teilt man ihn in <b>Partitionen</b> (Shards). Das Kapitel zeigt zwei Aufteilungsstrategien (nach Key-Range vs. nach Hash), das Problem von <b>Hot Spots</b> bei schiefer Last, wie Sekundaerindizes ueber Partitionen hinweg funktionieren, und das heikle Thema <b>Rebalancing</b>, wenn Knoten hinzukommen oder ausfallen.</p>
+    <div class="takeaways">
+      <div class="lab">Beim Lesen achten auf</div>
+      <ul>
+        <li>Range- vs. Hash-Partitionierung: der Trade-off zwischen effizienten Bereichsabfragen und gleichmaessiger Lastverteilung.</li>
+        <li>Sekundaerindizes <b>nach Dokument</b> vs. <b>nach Term</b> &mdash; warum verteilte Indizes schwierig sind.</li>
+        <li>Warum man Rebalancing-Strategien meidet, die <b>alle</b> Daten verschieben (Stichwort: feste Partitionsanzahl).</li>
+      </ul>
+    </div>
+    <div class="sections">
+      <div class="sec"><div class="sec-head"><div class="sec-name">Partitioning and Replication</div><div class="sec-pg">S. 200</div></div><p class="sec-desc">Wie Partitionierung und Replikation zusammenspielen.</p></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Partitioning of Key-Value Data</div><div class="sec-pg">S. 201</div></div>
+        <ul class="subs"><li>By Key Range <span class="p">202</span></li><li>By Hash of Key <span class="p">203</span></li><li>Skewed Workloads &amp; Hot Spots <span class="p">205</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Partitioning and Secondary Indexes</div><div class="sec-pg">S. 206</div></div>
+        <ul class="subs"><li>By Document <span class="p">206</span></li><li>By Term <span class="p">208</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Rebalancing Partitions</div><div class="sec-pg">S. 209</div></div>
+        <ul class="subs"><li>Strategies <span class="p">210</span></li><li>Automatic or Manual <span class="p">213</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Request Routing</div><div class="sec-pg">S. 214</div></div>
+        <ul class="subs"><li>Parallel Query Execution <span class="p">216</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Summary</div><div class="sec-pg">S. 216</div></div></div>
+    </div>
+  </article>
+
+  <!-- Chapter 7 -->
+  <article class="chapter" id="ch7">
+    <div class="ch-head">
+      <div>
+        <div class="ch-no">Kapitel 7 &middot; Teil II</div>
+        <h2 class="ch-title">Transactions</h2>
+      </div>
+      <div class="pageref">S. <span>221</span>&ndash;266</div>
+    </div>
+    <p class="abstract">Transaktionen buendeln mehrere Operationen zu einer Einheit, die ganz oder gar nicht passiert &mdash; das vereinfacht Fehlerbehandlung enorm. Das Kapitel seziert <b>ACID</b> praezise (die Begriffe sind unschaerfer, als man denkt) und arbeitet sich durch die <b>Isolationsstufen</b>: von Read Committed ueber Snapshot Isolation bis zur vollen Serialisierbarkeit. Race Conditions wie Lost Updates, Write Skew und Phantoms werden anschaulich gezeigt.</p>
+    <div class="takeaways">
+      <div class="lab">Beim Lesen achten auf</div>
+      <ul>
+        <li>Welche <b>konkrete Anomalie</b> jede Isolationsstufe verhindert &mdash; und welche sie offen laesst.</li>
+        <li>Die drei Wege zur Serialisierbarkeit: <b>echte serielle Ausfuehrung</b>, <b>2PL</b> und <b>SSI</b> &mdash; mit ihren Performance-Kosten.</li>
+        <li><b>Write Skew</b> ist subtil; verstehe das Beispiel genau, es taucht in der Praxis oft auf.</li>
+      </ul>
+    </div>
+    <div class="sections">
+      <div class="sec"><div class="sec-head"><div class="sec-name">The Slippery Concept of a Transaction</div><div class="sec-pg">S. 222</div></div>
+        <ul class="subs"><li>Meaning of ACID <span class="p">223</span></li><li>Single- vs Multi-Object <span class="p">228</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Weak Isolation Levels</div><div class="sec-pg">S. 233</div></div><p class="sec-desc">Die in der Praxis ueblichen, schwaecheren Garantien und ihre Tuecken.</p>
+        <ul class="subs"><li>Read Committed <span class="p">234</span></li><li>Snapshot Isolation / Repeatable Read <span class="p">237</span></li><li>Preventing Lost Updates <span class="p">242</span></li><li>Write Skew &amp; Phantoms <span class="p">246</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Serializability</div><div class="sec-pg">S. 251</div></div><p class="sec-desc">Die staerkste Garantie und drei Wege, sie zu erreichen.</p>
+        <ul class="subs"><li>Actual Serial Execution <span class="p">252</span></li><li>Two-Phase Locking (2PL) <span class="p">257</span></li><li>Serializable Snapshot Isolation (SSI) <span class="p">261</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Summary</div><div class="sec-pg">S. 266</div></div></div>
+    </div>
+  </article>
+
+  <!-- Chapter 8 -->
+  <article class="chapter" id="ch8">
+    <div class="ch-head">
+      <div>
+        <div class="ch-no">Kapitel 8 &middot; Teil II</div>
+        <h2 class="ch-title">The Trouble with Distributed Systems</h2>
+      </div>
+      <div class="pageref">S. <span>273</span>&ndash;310</div>
+    </div>
+    <p class="abstract">Das &bdquo;Realitaetscheck&ldquo;-Kapitel: In verteilten Systemen kann alles teilweise ausfallen, und das auf unvorhersehbare Weise. Kleppmann zeigt, warum man <b>Netzwerken nicht trauen</b> kann (Pakete verzoegern, verschwinden), warum <b>Uhren</b> luegen (Clock Skew, Process Pauses durch GC) und wie man trotzdem ueber &bdquo;Wahrheit&ldquo; in einem System reden kann &mdash; inklusive Byzantine Faults und der Rolle formaler Systemmodelle.</p>
+    <div class="takeaways">
+      <div class="lab">Beim Lesen achten auf</div>
+      <ul>
+        <li>Warum man einen langsamen nicht von einem ausgefallenen Knoten unterscheiden kann &mdash; und was das fuer Timeouts bedeutet.</li>
+        <li>Warum man sich fuer Korrektheit nie auf <b>time-of-day-Uhren</b> verlassen darf.</li>
+        <li>Das Konzept &bdquo;Wahrheit wird durch die Mehrheit definiert&ldquo; &mdash; die Vorbereitung auf Konsens in Kapitel 9.</li>
+      </ul>
+    </div>
+    <div class="sections">
+      <div class="sec"><div class="sec-head"><div class="sec-name">Faults and Partial Failures</div><div class="sec-pg">S. 274</div></div>
+        <ul class="subs"><li>Cloud Computing &amp; Supercomputing <span class="p">275</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Unreliable Networks</div><div class="sec-pg">S. 277</div></div>
+        <ul class="subs"><li>Network Faults in Practice <span class="p">279</span></li><li>Detecting Faults <span class="p">280</span></li><li>Timeouts &amp; Unbounded Delays <span class="p">281</span></li><li>Sync vs Async Networks <span class="p">284</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Unreliable Clocks</div><div class="sec-pg">S. 287</div></div>
+        <ul class="subs"><li>Monotonic vs Time-of-Day <span class="p">288</span></li><li>Clock Sync &amp; Accuracy <span class="p">289</span></li><li>Relying on Synchronized Clocks <span class="p">291</span></li><li>Process Pauses <span class="p">295</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Knowledge, Truth, and Lies</div><div class="sec-pg">S. 300</div></div>
+        <ul class="subs"><li>Truth Defined by the Majority <span class="p">300</span></li><li>Byzantine Faults <span class="p">304</span></li><li>System Model &amp; Reality <span class="p">306</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Summary</div><div class="sec-pg">S. 310</div></div></div>
+    </div>
+  </article>
+
+  <!-- Chapter 9 -->
+  <article class="chapter" id="ch9">
+    <div class="ch-head">
+      <div>
+        <div class="ch-no">Kapitel 9 &middot; Teil II</div>
+        <h2 class="ch-title">Consistency and Consensus</h2>
+      </div>
+      <div class="pageref">S. <span>321</span>&ndash;373</div>
+    </div>
+    <p class="abstract">Der theoretische Hoehepunkt von Teil II. Wie schaffen Systeme trotz aller Stoerungen aus Kapitel 8 verlaessliche Garantien? Die staerkste ist <b>Linearisierbarkeit</b> (das System verhaelt sich wie eine einzige Kopie). Dann geht es um <b>Ordnungsgarantien</b> (Kausalitaet, Total Order Broadcast) und schliesslich um das zentrale Problem: <b>Konsens</b> &mdash; wie sich Knoten auf einen Wert einigen (2PC, Raft/Paxos, ZooKeeper).</p>
+    <div class="takeaways">
+      <div class="lab">Beim Lesen achten auf</div>
+      <ul>
+        <li>Der Unterschied zwischen <b>Linearisierbarkeit</b> (Recency) und <b>Serialisierbarkeit</b> (Isolation) &mdash; oft verwechselt.</li>
+        <li>Warum <b>Kausalitaet</b> oft ausreicht und billiger ist als volle Linearisierbarkeit (CAP-Bezug).</li>
+        <li>Dass viele Probleme (Leader-Wahl, eindeutige Constraints, Sperren) sich auf <b>Konsens</b> reduzieren lassen.</li>
+      </ul>
+    </div>
+    <div class="sections">
+      <div class="sec"><div class="sec-head"><div class="sec-name">Consistency Guarantees</div><div class="sec-pg">S. 322</div></div></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Linearizability</div><div class="sec-pg">S. 324</div></div>
+        <ul class="subs"><li>What Makes a System Linearizable? <span class="p">325</span></li><li>Relying on Linearizability <span class="p">330</span></li><li>Implementing It <span class="p">332</span></li><li>The Cost of Linearizability <span class="p">335</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Ordering Guarantees</div><div class="sec-pg">S. 339</div></div>
+        <ul class="subs"><li>Ordering &amp; Causality <span class="p">339</span></li><li>Sequence Number Ordering <span class="p">343</span></li><li>Total Order Broadcast <span class="p">348</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Distributed Transactions and Consensus</div><div class="sec-pg">S. 352</div></div>
+        <ul class="subs"><li>Atomic Commit &amp; 2PC <span class="p">354</span></li><li>In Practice <span class="p">360</span></li><li>Fault-Tolerant Consensus <span class="p">364</span></li><li>Membership &amp; Coordination Services <span class="p">370</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Summary</div><div class="sec-pg">S. 373</div></div></div>
+    </div>
+  </article>
+
+  <!-- ===================== PART III ===================== -->
+  <section class="part" id="part3">
+    <div class="roman">III</div>
+    <div class="pt-text">
+      <div class="pt-label">Teil III &middot; ab S. 385</div>
+      <h2>Derived Data</h2>
+    </div>
+  </section>
+  <p class="part-blurb">In der Praxis nutzt niemand nur eine Datenbank. Dieser Teil handelt davon, wie man aus einem &bdquo;System of Record&ldquo; weitere, abgeleitete Datensaetze gewinnt &mdash; Caches, Indizes, materialisierte Sichten. Die zwei Werkzeuge dafuer sind <b>Batch-Verarbeitung</b> (begrenzte Daten) und <b>Stream-Verarbeitung</b> (unbegrenzte Daten). Das Schlusskapitel entwirft daraus eine Vision zukuenftiger Datensysteme.</p>
+
+  <!-- Chapter 10 -->
+  <article class="chapter" id="ch10">
+    <div class="ch-head">
+      <div>
+        <div class="ch-no">Kapitel 10 &middot; Teil III</div>
+        <h2 class="ch-title">Batch Processing</h2>
+      </div>
+      <div class="pageref">S. <span>389</span>&ndash;429</div>
+    </div>
+    <p class="abstract">Verarbeitung grosser, <b>begrenzter</b> Datenmengen &mdash; mit einer wunderbar didaktischen Bruecke: erst die Unix-Philosophie (Pipes, kleine Tools), dann <b>MapReduce</b> und verteilte Dateisysteme als deren Verallgemeinerung auf Clustergroesse. Joins, der Umgang mit Zwischenzustaenden und schliesslich Systeme jenseits von MapReduce (Spark, Flink, Dataflow-Engines) runden das Bild ab.</p>
+    <div class="takeaways">
+      <div class="lab">Beim Lesen achten auf</div>
+      <ul>
+        <li>Wie die <b>Unix-Philosophie</b> (Komponierbarkeit, einheitliche Schnittstelle) sich in MapReduce wiederfindet.</li>
+        <li>Die verschiedenen Join-Strategien (reduce-side vs. map-side) und wann welche passt.</li>
+        <li>Warum die <b>Unveraenderlichkeit</b> der Eingaben Batch-Jobs so robust und wiederholbar macht.</li>
+      </ul>
+    </div>
+    <div class="sections">
+      <div class="sec"><div class="sec-head"><div class="sec-name">Batch Processing with Unix Tools</div><div class="sec-pg">S. 391</div></div>
+        <ul class="subs"><li>Simple Log Analysis <span class="p">391</span></li><li>The Unix Philosophy <span class="p">394</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">MapReduce and Distributed Filesystems</div><div class="sec-pg">S. 397</div></div>
+        <ul class="subs"><li>Job Execution <span class="p">399</span></li><li>Reduce-Side Joins &amp; Grouping <span class="p">403</span></li><li>Map-Side Joins <span class="p">408</span></li><li>Output of Batch Workflows <span class="p">411</span></li><li>Hadoop vs Distributed DBs <span class="p">414</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Beyond MapReduce</div><div class="sec-pg">S. 419</div></div>
+        <ul class="subs"><li>Materialization of Intermediate State <span class="p">419</span></li><li>Graphs &amp; Iterative Processing <span class="p">424</span></li><li>High-Level APIs &amp; Languages <span class="p">426</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Summary</div><div class="sec-pg">S. 429</div></div></div>
+    </div>
+  </article>
+
+  <!-- Chapter 11 -->
+  <article class="chapter" id="ch11">
+    <div class="ch-head">
+      <div>
+        <div class="ch-no">Kapitel 11 &middot; Teil III</div>
+        <h2 class="ch-title">Stream Processing</h2>
+      </div>
+      <div class="pageref">S. <span>439</span>&ndash;479</div>
+    </div>
+    <p class="abstract">Batch fuer <b>unbegrenzte</b> Daten: Statt eines fixen Datensatzes verarbeitet man einen nie endenden Strom von <b>Events</b>, kurz nachdem sie passieren. Messaging-Systeme und partitionierte Logs (Kafka) transportieren die Events; Konzepte wie <b>Change Data Capture</b> und <b>Event Sourcing</b> verbinden Datenbanken mit Streams. Der schwierige Teil: Zeit, Stream-Joins und Fehlertoleranz im laufenden Strom.</p>
+    <div class="takeaways">
+      <div class="lab">Beim Lesen achten auf</div>
+      <ul>
+        <li>Der Unterschied zwischen <b>Event-Zeit</b> und <b>Verarbeitungszeit</b> &mdash; die Quelle vieler subtiler Bugs.</li>
+        <li><b>Event Sourcing</b> und die Idee, den Log als &bdquo;Single Source of Truth&ldquo; zu sehen, aus der alles abgeleitet wird.</li>
+        <li>Wie Streams und Batch konzeptionell verschmelzen (Vorbereitung auf Kapitel 12).</li>
+      </ul>
+    </div>
+    <div class="sections">
+      <div class="sec"><div class="sec-head"><div class="sec-name">Transmitting Event Streams</div><div class="sec-pg">S. 440</div></div>
+        <ul class="subs"><li>Messaging Systems <span class="p">441</span></li><li>Partitioned Logs <span class="p">446</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Databases and Streams</div><div class="sec-pg">S. 451</div></div>
+        <ul class="subs"><li>Keeping Systems in Sync <span class="p">452</span></li><li>Change Data Capture <span class="p">454</span></li><li>Event Sourcing <span class="p">457</span></li><li>State, Streams &amp; Immutability <span class="p">459</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Processing Streams</div><div class="sec-pg">S. 464</div></div>
+        <ul class="subs"><li>Uses of Stream Processing <span class="p">465</span></li><li>Reasoning About Time <span class="p">468</span></li><li>Stream Joins <span class="p">472</span></li><li>Fault Tolerance <span class="p">476</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Summary</div><div class="sec-pg">S. 479</div></div></div>
+    </div>
+  </article>
+
+  <!-- Chapter 12 -->
+  <article class="chapter" id="ch12">
+    <div class="ch-head">
+      <div>
+        <div class="ch-no">Kapitel 12 &middot; Teil III</div>
+        <h2 class="ch-title">The Future of Data Systems</h2>
+      </div>
+      <div class="pageref">S. <span>489</span>&ndash;543</div>
+    </div>
+    <p class="abstract">Das Synthese- und Meinungskapitel. Kleppmann argumentiert fuer <b>Datenintegration</b> durch das bewusste Ableiten von Daten, fuer das &bdquo;<b>Unbundling</b>&ldquo; der Datenbank in komponierbare Bausteine rund um Dataflow, und fuer Korrektheit jenseits von Transaktionen (das End-to-End-Argument). Es schliesst mit einer ungewoehnlich klaren ethischen Betrachtung: <b>Predictive Analytics</b>, Privatsphaere und die Verantwortung von Ingenieuren.</p>
+    <div class="takeaways">
+      <div class="lab">Beim Lesen achten auf</div>
+      <ul>
+        <li>Die Idee der &bdquo;unbundled database&ldquo; &mdash; Datenbankfunktionen als lose gekoppelte, ueber Logs verbundene Dienste.</li>
+        <li>Das <b>End-to-End-Argument</b>: warum echte Korrektheit nicht allein auf DB-Ebene garantiert werden kann.</li>
+        <li>Der ethische Schlussteil &mdash; bewusst nicht-technisch, aber zentral fuer Kleppmanns Gesamthaltung.</li>
+      </ul>
+    </div>
+    <div class="sections">
+      <div class="sec"><div class="sec-head"><div class="sec-name">Data Integration</div><div class="sec-pg">S. 490</div></div>
+        <ul class="subs"><li>Combining Tools by Deriving Data <span class="p">490</span></li><li>Batch &amp; Stream Processing <span class="p">494</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Unbundling Databases</div><div class="sec-pg">S. 499</div></div>
+        <ul class="subs"><li>Composing Storage Technologies <span class="p">499</span></li><li>Designing Around Dataflow <span class="p">504</span></li><li>Observing Derived State <span class="p">509</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Aiming for Correctness</div><div class="sec-pg">S. 515</div></div>
+        <ul class="subs"><li>End-to-End Argument <span class="p">516</span></li><li>Enforcing Constraints <span class="p">521</span></li><li>Timeliness &amp; Integrity <span class="p">524</span></li><li>Trust, but Verify <span class="p">528</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Doing the Right Thing</div><div class="sec-pg">S. 533</div></div>
+        <ul class="subs"><li>Predictive Analytics <span class="p">533</span></li><li>Privacy &amp; Tracking <span class="p">536</span></li></ul></div>
+      <div class="sec"><div class="sec-head"><div class="sec-name">Summary</div><div class="sec-pg">S. 543</div></div></div>
+    </div>
+  </article>
+
+  <footer>
+    Lesefuehrer zu <b>Designing Data-Intensive Applications</b> von Martin Kleppmann (O&rsquo;Reilly, 1. Auflage 2017).<br>
+    <span class="ref">Struktur und Seitenzahlen aus dem Inhaltsverzeichnis des Buches &middot; Anhang: Glossar S. 553, Index S. 559.</span>
+    <br><br>
+    <a class="backlink" href="../index.html" style="margin-top:0">&larr; Zur&uuml;ck zur &Uuml;bersicht</a>
+  </footer>
+  </article>
+</main>
+</div>
+
+<button class="totop" id="totop" aria-label="Nach oben">&uarr;</button>
+
+<script>
+  // progress bar
+  const prog = document.getElementById('progress');
+  const totop = document.getElementById('totop');
+  function onScroll(){
+    const h = document.documentElement;
+    const scrolled = h.scrollTop / (h.scrollHeight - h.clientHeight);
+    prog.style.width = (scrolled*100) + '%';
+    totop.classList.toggle('show', h.scrollTop > 600);
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  totop.addEventListener('click', ()=>window.scrollTo({top:0,behavior:'smooth'}));
+
+  // scroll-spy
+  const links = Array.from(document.querySelectorAll('#toc a'));
+  const map = new Map();
+  links.forEach(a=>{const id=a.getAttribute('href').slice(1);const el=document.getElementById(id);if(el)map.set(el,a);});
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a = map.get(e.target);
+        if(a) a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-20% 0px -70% 0px',threshold:0});
+  map.forEach((a,el)=>obs.observe(el));
+</script>
+</body>
+</html>
