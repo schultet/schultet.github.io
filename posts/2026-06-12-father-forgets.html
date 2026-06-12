@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Father Forgets &middot; Append-Only</title>
+<style>
+  :root {
+    --dusk: #141823;
+    --dusk-soft: #1c2231;
+    --lamp: #f0c87e;
+    --lamp-dim: #c9a45f;
+    --paper: #ece5d8;
+    --paper-dim: #a89f8e;
+    --rule: rgba(240, 200, 126, 0.25);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--dusk);
+    color: var(--paper);
+    font-family: Georgia, 'Times New Roman', serif;
+    line-height: 1.75;
+    font-size: 1.06rem;
+  }
+
+  /* The lamp glow — like the light by a child's bedside */
+  .glow {
+    position: fixed;
+    top: -22vh;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70vw;
+    height: 60vh;
+    background: radial-gradient(ellipse at center,
+      rgba(240, 200, 126, 0.14) 0%,
+      rgba(240, 200, 126, 0.05) 45%,
+      transparent 70%);
+    pointer-events: none;
+  }
+
+  main {
+    max-width: 39rem;
+    margin: 0 auto;
+    padding: 5.5rem 1.5rem 5rem;
+    position: relative;
+  }
+
+  .eyebrow {
+    font-family: Verdana, sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--lamp-dim);
+    margin-bottom: 1.4rem;
+  }
+
+  h1 {
+    font-size: clamp(2.1rem, 6vw, 3.1rem);
+    font-weight: 400;
+    font-style: italic;
+    color: var(--lamp);
+    line-height: 1.15;
+    margin-bottom: 0.6rem;
+  }
+
+  .byline {
+    color: var(--paper-dim);
+    font-size: 0.95rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .intro p {
+    margin-bottom: 1.4rem;
+  }
+
+  .intro p:first-of-type::first-letter {
+    font-size: 3.1em;
+    float: left;
+    line-height: 0.85;
+    padding-right: 0.55rem;
+    color: var(--lamp);
+  }
+
+  blockquote {
+    border-left: 2px solid var(--lamp-dim);
+    padding: 0.4rem 0 0.4rem 1.4rem;
+    margin: 2.4rem 0;
+    font-style: italic;
+    font-size: 1.18rem;
+    color: var(--lamp);
+  }
+
+  blockquote cite {
+    display: block;
+    margin-top: 0.6rem;
+    font-style: normal;
+    font-size: 0.82rem;
+    color: var(--paper-dim);
+  }
+
+  .poem-box {
+    margin: 3.5rem 0;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--dusk-soft);
+  }
+
+  .poem-box summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.8rem 2rem;
+    text-align: center;
+  }
+
+  .poem-box summary::-webkit-details-marker { display: none; }
+
+  .poem-box summary h2 {
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.4rem;
+    color: var(--lamp);
+    margin-bottom: 0.5rem;
+  }
+
+  .poem-box summary .hint {
+    font-family: Verdana, sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lamp-dim);
+  }
+
+  .poem-box summary .hint::after {
+    content: " ▾";
+  }
+
+  .poem-box[open] summary .hint::after {
+    content: " ▴";
+  }
+
+  .poem-box summary:hover h2,
+  .poem-box summary:focus-visible h2 {
+    color: var(--paper);
+  }
+
+  .poem-box summary:focus-visible {
+    outline: 2px solid var(--lamp);
+    outline-offset: -2px;
+    border-radius: 4px;
+  }
+
+  .poem-body {
+    padding: 0 2rem 2.2rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .poem-body .placeholder {
+    margin-top: 1.8rem;
+    padding: 2rem 1.6rem;
+    border: 1px dashed var(--lamp-dim);
+    border-radius: 4px;
+    text-align: center;
+    color: var(--paper-dim);
+    font-size: 0.95rem;
+  }
+
+  .poem-body .placeholder strong {
+    display: block;
+    color: var(--lamp);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.05rem;
+    margin-bottom: 0.7rem;
+  }
+
+  .poem-body .placeholder a {
+    color: var(--lamp);
+  }
+
+  .note {
+    font-size: 0.82rem;
+    color: var(--paper-dim);
+    border-top: 1px solid var(--rule);
+    padding-top: 1.6rem;
+    margin-top: 3.5rem;
+  }
+
+  .backlink {
+    display: inline-block;
+    font-family: Verdana, sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--lamp-dim);
+    margin-bottom: 2.8rem;
+  }
+
+  .backlink:hover,
+  .backlink:focus-visible {
+    color: var(--lamp);
+  }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 3.2rem;
+  }
+
+  .post-tags .t {
+    font-family: Verdana, sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--lamp-dim);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 0.2rem 0.6rem;
+  }
+
+  .site-foot {
+    border-top: 1px solid var(--rule);
+    margin-top: 3.5rem;
+    padding-top: 1.8rem;
+  }
+
+  .site-foot .backlink {
+    margin-bottom: 1.2rem;
+  }
+
+  .foot-nav {
+    font-family: Verdana, sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+  }
+
+  .foot-nav a {
+    color: var(--paper-dim);
+    text-decoration: none;
+    margin-right: 1.4rem;
+  }
+
+  .foot-nav a:hover,
+  .foot-nav a:focus-visible {
+    color: var(--lamp);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    main > * {
+      animation: rise 0.9s ease both;
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: none; }
+    }
+  }
+</style>
+</head>
+<body>
+<div class="glow" aria-hidden="true"></div>
+<main>
+  <a class="backlink" href="../index.html">&larr; All posts</a>
+
+  <p class="eyebrow">A father's daily reminder</p>
+  <h1>Father Forgets</h1>
+  <p class="byline">On a poem by W. Livingston Larned, first published 1927 — and why I return to it.</p>
+  <div class="post-tags">
+    <span class="t">Essay</span>
+    <span class="t">Familie</span>
+    <span class="t">Lyrik</span>
+  </div>
+
+  <section class="intro">
+    <p>There is a poem I try to read every day. I will be honest: some days I manage it, some days life gets in the way. But even on the days I don't read it, it reads me.</p>
+
+    <p>It is the confession of a father standing at his sleeping son's bedside, suddenly seeing the whole day again — the scolding at breakfast, the sharp words over small things, the frown where a wave goodbye deserved a smile. And in the quiet of that room, he understands what he had forgotten all day long: he had been <em>measuring his boy by the yardstick of his own adult years</em>.</p>
+
+    <blockquote>
+      &ldquo;I was expecting too much of youth.&rdquo;
+      <cite>— W. Livingston Larned, <em>Father Forgets</em> (1927)</cite>
+    </blockquote>
+
+    <p>That line is the whole reason this page exists. As a father, I know exactly how it happens. Children spill things. They dawdle. They do precisely the thing you asked them not to do, thirty seconds after you asked. And anger comes so easily — faster than thought, faster than love.</p>
+
+    <p>But they are just children. That is not an excuse for them; it is a duty for us. They are small, and fragile, and they are learning the world from scratch, and the person they learn it from most is you. When they make you angry, that is exactly the moment to remember what they are: not small adults failing at adulthood, but children succeeding at childhood — messily, loudly, beautifully.</p>
+
+    <p>You care for them. You hold them. And one day, far sooner than you think, they will not be small anymore. Reading this poem — every day, or as often as I honestly manage — makes me a better father. Not a perfect one. A better one. That is enough to start each morning with.</p>
+  </section>
+
+  <details class="poem-box">
+    <summary>
+      <h2>Read the poem</h2>
+      <span class="hint">Click to expand</span>
+    </summary>
+    <div class="poem-body">
+      <div class="placeholder">
+        <strong>The poem will appear here.</strong>
+        <!-- PASTE THE FULL TEXT OF "FATHER FORGETS" HERE
+             once it enters the German public domain on 1 January 2031.
+             Until then, this space links to the poem instead. -->
+        &ldquo;Father Forgets&rdquo; is under copyright in Germany until the end of 2030,
+        so I cannot reprint it here yet. You can read the full text via
+        <a href="https://en.wikipedia.org/wiki/W._Livingston_Larned" rel="noopener">W.&nbsp;Livingston&nbsp;Larned</a>.
+        It takes three minutes to read and stays with you for years.
+      </div>
+    </div>
+  </details>
+
+  <p class="note">Quotation from <em>Father Forgets</em> by W. Livingston Larned (People's Home Journal, 1927; later condensed in Reader's Digest and reprinted in Dale Carnegie's <em>How to Win Friends and Influence People</em>), used as a brief quotation within this commentary under § 51 UrhG. The work enters the German public domain on 1 January 2031, seventy years after the author's death in 1960.</p>
+
+  <footer class="site-foot">
+    <a class="backlink" href="../index.html">&larr; Zur&uuml;ck zur &Uuml;bersicht</a>
+    <nav class="foot-nav">
+      <a href="../impressum.html">Impressum</a>
+      <a href="../datenschutz.html">Datenschutz</a>
+    </nav>
+  </footer>
+</main>
+</body>
+</html>
