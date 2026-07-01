@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rapid Introduction to Go</title>
+<meta name="description" content="A rapid introduction to the Go programming language: basics, interfaces and concurrency — with a 2026 update on what has changed since 2017.">
+<style>
+
+:root{
+  --bg:#fdfdfc; --fg:#1f2328; --muted:#6a737d; --line:#e6e6e3;
+  --accent:#007d9c; --accent-2:#00add8; --accent-soft:#e6f6fb;
+  --code-bg:#f6f8fa; --code-fg:#24292f; --sidebar-bg:#fbfbfa;
+  --kw:#cf222e; --str:#0a7d33; --com:#6a737d; --num:#0550ae; --typ:#8250df;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sidebar-w:288px;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0f1115; --fg:#e6e6e3; --muted:#9aa3ad; --line:#272b33;
+    --accent:#39c5ec; --accent-2:#00add8; --accent-soft:#10262e;
+    --code-bg:#161a20; --code-fg:#dde3ea; --sidebar-bg:#11141a;
+    --kw:#ff7b72; --str:#7ee787; --com:#8b949e; --num:#79c0ff; --typ:#d2a8ff;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
+  font-size:17px;line-height:1.65;-webkit-text-size-adjust:100%;
+}
+.skip-link{position:absolute;left:-9999px;top:0;background:var(--accent);color:#fff;padding:.5rem 1rem;z-index:100}
+.skip-link:focus{left:0}
+
+.site-header{
+  position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:.75rem;
+  padding:.6rem 1rem;background:var(--sidebar-bg);border-bottom:1px solid var(--line);
+}
+.brand{display:flex;flex-direction:column;line-height:1.2}
+.brand-title{font-weight:700;letter-spacing:-.01em}
+.brand-sub{font-size:.78rem;color:var(--muted)}
+#toc-toggle{
+  display:none;font-size:1.25rem;background:none;border:1px solid var(--line);
+  border-radius:8px;color:var(--fg);width:40px;height:38px;cursor:pointer;
+}
+.home-link{
+  margin-left:auto;font-size:.85rem;font-weight:600;color:var(--accent);
+  text-decoration:none;white-space:nowrap;padding:.35rem .6rem;border-radius:8px;
+}
+.home-link:hover{background:var(--accent-soft);color:var(--accent-2)}
+
+.layout{display:flex;align-items:flex-start;max-width:1280px;margin:0 auto}
+
+.sidebar{
+  position:sticky;top:53px;align-self:flex-start;flex:0 0 var(--sidebar-w);
+  width:var(--sidebar-w);height:calc(100vh - 53px);overflow-y:auto;
+  background:var(--sidebar-bg);border-right:1px solid var(--line);
+}
+.sidebar-inner{padding:1.25rem 1rem 3rem}
+.sidebar-head{padding:0 .5rem 1rem;border-bottom:1px solid var(--line);margin-bottom:.75rem}
+.kicker{margin:0;font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);font-weight:700}
+.meta{margin:.25rem 0 0;font-size:.82rem;color:var(--muted)}
+.meta-dim{color:var(--accent-2);font-weight:600}
+.post-tags{display:flex;flex-wrap:wrap;gap:.35rem;margin:.6rem 0 0}
+.post-tags .t{
+  font-size:.72rem;font-weight:600;color:var(--accent);background:var(--accent-soft);
+  border:1px solid var(--line);border-radius:999px;padding:.12rem .55rem;
+}
+
+#toc ul{list-style:none;margin:0;padding:0}
+#toc>ul>li.toc-section{margin-top:.9rem}
+#toc>ul>li.toc-section>a{
+  display:block;font-weight:700;font-size:.74rem;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--muted);padding:.25rem .5rem;
+}
+#toc ul ul li a{
+  display:block;padding:.28rem .5rem .28rem .75rem;font-size:.88rem;color:var(--fg);
+  text-decoration:none;border-left:2px solid transparent;border-radius:0 6px 6px 0;
+}
+#toc ul ul li a:hover{background:var(--accent-soft);color:var(--accent)}
+#toc a.active{
+  color:var(--accent);background:var(--accent-soft);
+  border-left-color:var(--accent-2);font-weight:600;
+}
+
+#content{flex:1 1 auto;min-width:0;padding:1rem 3rem 6rem;max-width:880px}
+
+section.divider{
+  margin:3.5rem 0 1.5rem;padding-bottom:.4rem;border-bottom:2px solid var(--accent-2);
+  scroll-margin-top:70px;
+}
+section.divider:first-child{margin-top:1rem}
+section.divider h1{
+  margin:0;font-size:1.9rem;letter-spacing:-.02em;color:var(--accent);
+}
+.section-sub{margin:.3rem 0 0;color:var(--muted);font-style:italic}
+
+section.lesson{scroll-margin-top:70px;margin:0 0 2.6rem}
+section.lesson h2{
+  font-size:1.32rem;letter-spacing:-.01em;margin:1.8rem 0 .7rem;padding-top:.2rem;
+}
+section.lesson h3{font-size:1.02rem;margin:1.4rem 0 .4rem;color:var(--fg)}
+p{margin:.7rem 0}
+a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px}
+a:hover{color:var(--accent-2)}
+ul{margin:.6rem 0;padding-left:1.3rem}
+li{margin:.3rem 0}
+strong{font-weight:700}
+
+code{
+  font-family:var(--mono);font-size:.86em;background:var(--code-bg);
+  padding:.12em .35em;border-radius:5px;color:var(--code-fg);
+}
+pre.code{
+  margin:1rem 0;padding:1rem 1.1rem;background:var(--code-bg);color:var(--code-fg);
+  border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+  font-family:var(--mono);font-size:.85rem;line-height:1.5;
+}
+pre.code code{background:none;padding:0;font-size:inherit;color:inherit}
+pre.lang-shell{background:#1b1f27;color:#e6e6e3;border-color:#1b1f27}
+pre.lang-shell code{color:#e6e6e3}
+
+.tok-kw{color:var(--kw)}
+.tok-str{color:var(--str)}
+.tok-com{color:var(--com);font-style:italic}
+.tok-num{color:var(--num)}
+.tok-typ{color:var(--typ)}
+pre.lang-shell .tok-com{color:#8b9bb0}
+
+.callout{
+  margin:1rem 0;padding:.75rem 1rem;border-radius:8px;font-size:.92rem;
+  border:1px solid var(--line);border-left:4px solid var(--muted);background:var(--code-bg);
+}
+.callout.tip{border-left-color:var(--accent-2);background:var(--accent-soft)}
+.callout.warn{border-left-color:#d29922;background:rgba(210,153,34,.10)}
+.callout a{font-weight:600}
+
+details.solution{
+  margin:1rem 0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--code-bg);
+}
+details.solution>summary{
+  cursor:pointer;padding:.6rem 1rem;font-weight:600;font-size:.9rem;color:var(--accent);
+  list-style:none;user-select:none;
+}
+details.solution>summary::-webkit-details-marker{display:none}
+details.solution>summary::before{content:"▸ ";color:var(--accent-2)}
+details.solution[open]>summary::before{content:"▾ "}
+details.solution pre.code{margin:0;border:none;border-top:1px solid var(--line);border-radius:0}
+
+figure{margin:1.2rem 0;text-align:center}
+figure img{max-width:100%;height:auto;border-radius:10px;border:1px solid var(--line)}
+figcaption{margin-top:.5rem;font-size:.85rem;color:var(--muted);font-style:italic}
+
+.site-footer{
+  border-top:1px solid var(--line);padding:1.5rem;text-align:center;
+  color:var(--muted);font-size:.82rem;
+}
+.site-footer p{max-width:880px;margin:0 auto}
+
+@media (max-width:900px){
+  #toc-toggle{display:block}
+  .sidebar{
+    position:fixed;top:53px;left:0;z-index:50;height:calc(100vh - 53px);
+    transform:translateX(-100%);transition:transform .2s ease;width:min(320px,85vw);flex-basis:auto;
+  }
+  body.toc-open .sidebar{transform:translateX(0);box-shadow:0 0 40px rgba(0,0,0,.25)}
+  body.toc-open::after{content:"";position:fixed;inset:53px 0 0;background:rgba(0,0,0,.35);z-index:45}
+  #content{padding:1rem 1.25rem 4rem}
+  section.divider h1{font-size:1.55rem}
+}
+
+</style>
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+<header class="site-header">
+  <button id="toc-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+  <div class="brand">
+    <span class="brand-title">Rapid Introduction to Go</span>
+    <span class="brand-sub">Basics · Interfaces · Concurrency</span>
+  </div>
+  <a class="home-link" href="../index.html">&larr; All notes</a>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <div class="sidebar-head">
+        <p class="kicker">Go tutorial</p>
+        <p class="meta">Tim Schulte · 2017<br><span class="meta-dim">updated 2026</span></p>
+        <div class="post-tags">
+          <span class="t">Go</span>
+          <span class="t">Programmierung</span>
+          <span class="t">Tutorial</span>
+          <span class="t">Nebenläufigkeit</span>
+        </div>
+      </div>
+      <nav id="toc" aria-label="Table of contents">
+  <ul>
+    <li class="toc-section"><a href="#intro">Introduction</a>
+      <ul>
+        <li><a href="#learn-language">How to learn a new language from scratch in limited time?</a></li>
+        <li><a href="#agenda">Agenda</a></li>
+      </ul>
+    </li>
+    <li class="toc-section"><a href="#gathering-data">Gathering data</a>
+      <ul>
+        <li><a href="#what-is-go">What is Go?</a></li>
+        <li><a href="#what-is-different">What is different?</a></li>
+        <li><a href="#public-reception">Public reception</a></li>
+      </ul>
+    </li>
+    <li class="toc-section"><a href="#entering-the-ship">Entering the ship</a>
+      <ul>
+        <li><a href="#installing">Installing the Go tools</a></li>
+        <li><a href="#workspace">Creating a Workspace</a></li>
+        <li><a href="#creating-running">Creating and Running Go Programs</a></li>
+      </ul>
+    </li>
+    <li class="toc-section"><a href="#session-01">Session 01: Basics</a>
+      <ul>
+        <li><a href="#packages">Packages</a></li>
+        <li><a href="#exported-names">Exported names</a></li>
+        <li><a href="#functions">Functions</a></li>
+        <li><a href="#functions-2">Functions (continued)</a></li>
+        <li><a href="#higher-order">Higher-Order Functions</a></li>
+        <li><a href="#variables">Variables</a></li>
+        <li><a href="#zero-values">Zero values</a></li>
+        <li><a href="#types">Types</a></li>
+        <li><a href="#for-loop">For-Loop</a></li>
+        <li><a href="#if-statement">If-Statement</a></li>
+        <li><a href="#switch">Switch</a></li>
+        <li><a href="#slices">Arrays and Slices</a></li>
+        <li><a href="#slices-make">Creating a Slice with Make</a></li>
+        <li><a href="#slices-append">Appending to a Slice</a></li>
+        <li><a href="#maps">Maps</a></li>
+        <li><a href="#range">Range</a></li>
+        <li><a href="#ex-fib">Exercise: Fibonacci closure</a></li>
+        <li><a href="#ex-exp">Exercise: Exponential function</a></li>
+      </ul>
+    </li>
+    <li class="toc-section"><a href="#session-02">Session 02: Interfaces</a>
+      <ul>
+        <li><a href="#interfaces-intro">Interfaces</a></li>
+        <li><a href="#structs">Structs</a></li>
+        <li><a href="#methods">Methods</a></li>
+        <li><a href="#methods-pointer">Methods with pointer receiver</a></li>
+        <li><a href="#interfaces">Interfaces</a></li>
+        <li><a href="#type-switch">Type switch</a></li>
+        <li><a href="#type-switch-example">Example</a></li>
+        <li><a href="#fmt-stringer">fmt.Stringer</a></li>
+        <li><a href="#errors">Errors</a></li>
+        <li><a href="#errors-create">Errors (continued)</a></li>
+        <li><a href="#embedding-types">Embedding types</a></li>
+        <li><a href="#embedding-interfaces">Embedding interfaces</a></li>
+        <li><a href="#hello-net">Hello, net</a></li>
+        <li><a href="#hello-net-2">Hello, net (continued)</a></li>
+        <li><a href="#interfaces-summary">Summary</a></li>
+        <li><a href="#ex-sortable">Exercise: Sortable ByteSlice</a></li>
+        <li><a href="#ex-intreader">Exercise: IntReader</a></li>
+      </ul>
+    </li>
+    <li class="toc-section"><a href="#session-03">Session 03: Concurrency</a>
+      <ul>
+        <li><a href="#concurrency">Concurrency</a></li>
+        <li><a href="#goroutines">Goroutines</a></li>
+        <li><a href="#channels">Channels</a></li>
+        <li><a href="#communicating-goroutines">Communicating Goroutines</a></li>
+        <li><a href="#select">Select</a></li>
+        <li><a href="#communicating-goroutines-2">Communicating Goroutines (with select)</a></li>
+        <li><a href="#generator">Generator</a></li>
+        <li><a href="#multiplexer">Multiplexer</a></li>
+        <li><a href="#daisy-chain">Daisy-chain</a></li>
+        <li><a href="#quit-chan">Quit chan</a></li>
+        <li><a href="#concurrency-so">So...</a></li>
+        <li><a href="#ex-philosophers">Exercise: Dining Philosophers</a></li>
+      </ul>
+    </li>
+    <li class="toc-section"><a href="#conclusion">Conclusion</a>
+      <ul>
+        <li><a href="#conclusion-body">Conclusion</a></li>
+      </ul>
+    </li>
+    <li class="toc-section"><a href="#modern-go">Is this still idiomatic Go?</a>
+      <ul>
+        <li><a href="#modern-intro">The good news: the fundamentals still hold</a></li>
+        <li><a href="#modern-modules">Workflow: modules replaced GOPATH (Go 1.11, 2018)</a></li>
+        <li><a href="#modern-generics">Generics (Go 1.18, 2022)</a></li>
+        <li><a href="#modern-any">any replaces interface{} (Go 1.18)</a></li>
+        <li><a href="#modern-errors">Error wrapping (Go 1.13 / 1.20)</a></li>
+        <li><a href="#modern-loopvar">Loop variable semantics changed (Go 1.22, 2024)</a></li>
+        <li><a href="#modern-stdlib">New standard-library staples</a></li>
+        <li><a href="#modern-iterators">Iterators and range-over-func (Go 1.23)</a></li>
+        <li><a href="#modern-misc">Other changes worth knowing</a></li>
+        <li><a href="#modern-idioms">Quick idiom checklist for modernizing this code</a></li>
+      </ul>
+    </li>
+    <li class="toc-section"><a href="#references">References</a>
+      <ul>
+        <li><a href="#references-body">References</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+  </aside>
+  <main id="content">
+
+  <section class="divider" id="intro">
+    <h1>Introduction</h1>
+  </section>
+
+  <section class="lesson" id="learn-language">
+    <h2>How to learn a new language from scratch in limited time?</h2>
+    <figure><img src="../assets/images/arrival-heptapod-writing-lego-PD.jpg" alt="Heptapod logogram built from Lego" loading="lazy"></figure>
+    <p>When you set out to learn a new language, it makes sense to start with the features it shares with languages you already know — the common ground used to express well-known concepts. In short: <strong>exploit the commonalities</strong>. Once a basic understanding has been established, you are free to explore the new possibilities and new ways of doing things that the language offers.</p>
+  </section>
+
+  <section class="lesson" id="agenda">
+    <h2>Agenda</h2>
+    <ul>
+      <li>Gathering data — what Go is, and what makes it different</li>
+      <li>Entering the ship — setting up the Go environment (compiler, tools, ...)</li>
+      <li>Session 01 — a rapid introduction to the fundamentals of Go</li>
+      <li>Session 02 — Interfaces</li>
+      <li>Session 03 — Concurrency</li>
+    </ul>
+  </section>
+
+  <section class="divider" id="gathering-data">
+    <h1>Gathering data</h1>
+  </section>
+
+  <section class="lesson" id="what-is-go">
+    <h2>What is Go?</h2>
+    <p>Go is an open-source, general-purpose programming language.</p>
+    <ul>
+      <li>Compiled</li>
+      <li>Statically typed</li>
+      <li>Concurrent</li>
+      <li>Garbage collected</li>
+      <li>Simple and productive</li>
+    </ul>
+    <p>It builds fast at scale, ships a robust standard library, supports a multitude of platforms, and comes with a complete set of tools (build, fetch, test, document, profile, format).</p>
+  </section>
+
+  <section class="lesson" id="what-is-different">
+    <h2>What is different?</h2>
+    <p>Coming from other mainstream languages, the most striking thing about Go is what it leaves out:</p>
+    <ul>
+      <li>No classes, no inheritance, no generics*</li>
+      <li>No function overloading, no default argument values</li>
+      <li>No exception handling</li>
+      <li>No pointer arithmetic</li>
+    </ul>
+    <div class="callout warn">This slide is from 2017. Go gained generics in 2022 (Go 1.18) — see <a href="#modern-go">Is this still idiomatic Go?</a> at the end.</div>
+  </section>
+
+  <section class="lesson" id="public-reception">
+    <h2>Public reception</h2>
+    <figure><img src="../assets/images/trends.png" alt="Google Trends for golang" loading="lazy"><figcaption>Google Trends for <a href="https://trends.google.com/trends/explore?date=all&amp;q=golang" target="_blank" rel="noopener">golang</a></figcaption></figure>
+  </section>
+
+  <section class="divider" id="entering-the-ship">
+    <h1>Entering the ship</h1>
+    <p class="section-sub">Setting up the Go environment</p>
+  </section>
+
+  <section class="lesson" id="installing">
+    <h2>Installing the Go tools</h2>
+    <div class="callout warn">Installation has changed since 2017. Today you simply download an installer from <a href="https://go.dev/doc/install" target="_blank" rel="noopener">go.dev/doc/install</a>; <code>GOROOT</code> and <code>GOPATH</code> no longer need to be set by hand. The 2017 instructions are kept below for historical context.</div>
+    <p>Get the archive for your system from <a href="https://go.dev/doc/install" target="_blank" rel="noopener">go.dev/doc/install</a>. Extract it somewhere, e.g. <code>/usr/local</code>:</p>
+    <pre class="code lang-shell"><code>$ tar -C /usr/local -xzf go$VERSION.$OS-$ARCH.tar.gz</code></pre>
+    <p>Export the path and set the <code>GOROOT</code> environment variable (you may want to add commands like the following to <code>$HOME/.profile</code>):</p>
+    <pre class="code lang-shell"><code>$ export GOROOT=/usr/local/go
+$ export PATH=$PATH:$GOROOT/bin</code></pre>
+    <p>Test your installation:</p>
+    <pre class="code lang-shell"><code>$ go version
+$ go env GOROOT</code></pre>
+  </section>
+
+  <section class="lesson" id="workspace">
+    <h2>Creating a Workspace</h2>
+    <div class="callout warn">Workspaces and <code>GOPATH</code> were superseded by <a href="#modern-go">Go modules</a> in 2018 (Go 1.11). You no longer keep all code under a single <code>$GOPATH/src</code> tree. This slide is historical.</div>
+    <p>Go programmers traditionally kept all their code in a single <em>workspace</em> — a directory hierarchy with three directories at its root:</p>
+    <pre class="code lang-shell"><code>gocode/
+├── src/  # contains Go source files,
+├── pkg/  # contains package objects, and
+└── bin/  # contains executable commands.</code></pre>
+    <p>The <code>go</code> <code>tool</code> builds source packages and installs the resulting binaries to the <code>pkg</code> and <code>bin</code> directories. Set the <code>GOPATH</code> environment variable to specify the location of your workspace:</p>
+    <pre class="code lang-shell"><code>$ export GOPATH=$HOME/gocode</code></pre>
+    <p>The path to a package&#x27;s directory determined its _import_path_. Note that this differs from other environments in which every project has a separate workspace tied to a version-control repository.</p>
+  </section>
+
+  <section class="lesson" id="creating-running">
+    <h2>Creating and Running Go Programs</h2>
+    <p>Create a new package directory inside your workspace:</p>
+    <pre class="code lang-shell"><code>$ mkdir -p $GOPATH/src/github.com/user/hello</code></pre>
+    <p>Create a file named <code>hello.go</code> inside that directory, containing the following Go code:</p>
+    <pre class="code lang-go"><code>package main
+
+import &quot;fmt&quot;
+
+func main() {
+	fmt.Printf(&quot;Why are you here?\n&quot;)
+}</code></pre>
+    <p>Run the program:</p>
+    <pre class="code lang-shell"><code>$ go run hello.go</code></pre>
+  </section>
+
+  <section class="divider" id="session-01">
+    <h1>Session 01: Basics</h1>
+    <p class="section-sub">Establishing a basic understanding</p>
+  </section>
+
+  <section class="lesson" id="packages">
+    <h2>Packages</h2>
+    <pre class="code lang-go"><code>package main
+
+import (
+	&quot;fmt&quot;
+	&quot;math/rand&quot;
+)
+
+func main() {
+	fmt.Println(&quot;My favorite number is&quot;, rand.Intn(10))
+}</code></pre>
+    <p>Every Go program is made up of packages. Imports can be grouped into a parenthesized import statement. Programs start running in package <code>main</code>.</p>
+  </section>
+
+  <section class="lesson" id="exported-names">
+    <h2>Exported names</h2>
+    <pre class="code lang-go"><code>package main
+
+import (
+	&quot;fmt&quot;
+	&quot;math&quot;
+)
+
+func main() {
+	fmt.Println(math.pi)
+}</code></pre>
+    <p>A name is exported if it begins with a capital letter. When importing a package, you can refer only to its exported names; unexported names are not accessible from outside the package.</p>
+    <div class="callout tip">This program does not compile: <code>math.pi</code> is unexported. The exported constant is <code>math.Pi</code> (capital P).</div>
+  </section>
+
+  <section class="lesson" id="functions">
+    <h2>Functions</h2>
+    <pre class="code lang-go"><code>package main
+
+import &quot;fmt&quot;
+
+func greet(name string) {
+	fmt.Println(&quot;Hello,&quot;, name+&quot;!&quot;)
+}
+
+func main() {
+	greet(&quot;Gopher&quot;)
+}</code></pre>
+    <p>Functions can take zero or more arguments. Notice that the type comes <em>after</em> the variable name.</p>
+  </section>
+
+  <section class="lesson" id="functions-2">
+    <h2>Functions (continued)</h2>
+    <pre class="code lang-go"><code>func add(x, y int) int {
+	return x + y
+}</code></pre>
+    <pre class="code lang-go"><code>func swap(i int, j bool) (bool, int) {
+	return j, i
+}</code></pre>
+    <p>If multiple arguments are of the same type, the type only needs to be specified once. Functions can return any number of results.</p>
+  </section>
+
+  <section class="lesson" id="higher-order">
+    <h2>Higher-Order Functions</h2>
+    <pre class="code lang-go"><code>package main
+
+import (
+	&quot;fmt&quot;
+	&quot;math&quot;
+)
+
+func compose(f, g func(float64) float64) func(float64) float64 {
+	return func(x float64) float64 {
+		return f(g(x))
+	}
+}
+
+func main() {
+	sincos := compose(math.Sin, math.Cos)
+	fmt.Printf(&quot;%T: 0.5 -&gt; %v\n&quot;, sincos, sincos(0.5))
+}</code></pre>
+    <p>Functions are values too. They may be passed as function arguments and returned as results.</p>
+  </section>
+
+  <section class="lesson" id="variables">
+    <h2>Variables</h2>
+    <pre class="code lang-go"><code>package main
+
+import &quot;fmt&quot;
+
+var a int
+var b, c string = &quot;alice&quot;, &quot;bob&quot;
+
+func main() {
+	host, port := &quot;localhost&quot;, 3035
+
+	fmt.Println(a, b, c, host, port)
+}</code></pre>
+    <p>The <code>var</code> statement declares a list of variables (at package or function level); the type is last. Variable declarations can include initializers (one per variable). Inside a function, the short assignment statement <code>:=</code> can be used in place of a <code>var</code> declaration with implicit type.</p>
+    <div class="callout tip">Outside a function every statement begins with a keyword (<code>var</code>, <code>func</code>, etc.), so <code>:=</code> is not available there. See <a href="https://go.dev/blog/declaration-syntax" target="_blank" rel="noopener">Go&#x27;s declaration syntax</a>.</div>
+  </section>
+
+  <section class="lesson" id="zero-values">
+    <h2>Zero values</h2>
+    <pre class="code lang-go"><code>package main
+
+import &quot;fmt&quot;
+
+func main() {
+	var i int
+	var f float64
+	var b bool
+	var s string
+	fmt.Printf(&quot;%v %v %v %q\n&quot;, i, f, b, s)
+}</code></pre>
+    <p>Variables declared without an explicit initial value are given their _zero_value_.</p>
+  </section>
+
+  <section class="lesson" id="types">
+    <h2>Types</h2>
+    <pre class="code lang-go"><code>// Basic types
+bool
+
+string
+
+int, int8, int16, int32, int64
+uint, uint8, uint16, uint32, uint64, uintptr
+
+byte // alias for uint8
+rune // alias for int32 (Unicode code point)
+
+float32, float64
+
+complex64, complex128
+
+// Pointers
+*bool, *string, *int, *int8, ...</code></pre>
+    <p>Go has the usual set of basic types. There are pointers (<code>*T</code>) — but no pointer arithmetic.</p>
+  </section>
+
+  <section class="lesson" id="for-loop">
+    <h2>For-Loop</h2>
+    <p>Go has only one looping construct, the <code>for</code> loop. It consists of three components separated by semicolons: an init statement, a condition expression, and a post statement — all of which are optional.</p>
+    <pre class="code lang-go"><code>for i := 0; i &lt; 100; i++ {
+}
+
+// When neither init- nor post-statements are present, semicolons can be omitted
+for isEven(x) {
+}
+
+// Without the condition-expression `for` loops forever
+for {
+}</code></pre>
+    <div class="callout tip">There are no parentheses surrounding the three components, but the braces <code>{</code> <code>}</code> are always required.</div>
+  </section>
+
+  <section class="lesson" id="if-statement">
+    <h2>If-Statement</h2>
+    <pre class="code lang-go"><code>package main
+
+import (
+	&quot;fmt&quot;
+	&quot;math&quot;
+)
+
+func main() {
+	e := 2.71828183
+	if y := math.Pow(e, math.Pi); y &lt; 24 {
+		fmt.Printf(&quot;e^π = %v\n&quot;, y)
+	} else {
+		fmt.Printf(&quot;%v\n&quot;, y)
+	}
+	// y is out of scope
+}</code></pre>
+    <p>The optional short statement (here <code>y := math.Pow(...)</code>) runs before the condition; the variable it declares is scoped to the <code>if</code>/<code>else</code> block.</p>
+  </section>
+
+  <section class="lesson" id="switch">
+    <h2>Switch</h2>
+    <pre class="code lang-go"><code>package main
+
+import (
+	&quot;fmt&quot;
+	&quot;runtime&quot;
+)
+
+func main() {
+	fmt.Print(&quot;Go runs on &quot;)
+	switch os := runtime.GOOS; os {
+	case &quot;darwin&quot;:
+		fmt.Println(&quot;OS X.&quot;)
+	case &quot;linux&quot;:
+		fmt.Println(&quot;Linux.&quot;)
+	default:
+		// freebsd, openbsd, plan9, windows...
+		fmt.Printf(&quot;%s.&quot;, os)
+	}
+}</code></pre>
+    <p>A case body breaks automatically, unless it ends with a <code>fallthrough</code> statement.</p>
+  </section>
+
+  <section class="lesson" id="slices">
+    <h2>Arrays and Slices</h2>
+    <pre class="code lang-go"><code>package main
+
+import &quot;fmt&quot;
+
+func main() {
+	primes := [5]int{2, 3, 5, 7, 11} // array of size 5
+
+	var s []int = primes[2:4] // slice
+	fmt.Printf(&quot;primes: %v\ns: %v\n&quot;, primes, s)
+
+	s[0] = 42
+	fmt.Printf(&quot;primes: %v\ns: %v\n&quot;, primes, s)
+}</code></pre>
+    <p>An <code>array</code> has a fixed size. A <code>slice</code> is a dynamically-sized, flexible view into the elements of an array. A slice does not store any data itself — it just describes a section of an underlying array, so changing the elements of a slice modifies the underlying array. The zero value of a slice is <code>nil</code>.</p>
+  </section>
+
+  <section class="lesson" id="slices-make">
+    <h2>Creating a Slice with Make</h2>
+    <pre class="code lang-go"><code>package main
+
+import &quot;fmt&quot;
+
+func main() {
+	a := make([]float32, 5)    // a = [0 0 0 0 0] len=5 cap=5
+	b := make([]float32, 0, 5) // b = []          len=0 cap=5
+	c := b[1:4]                // c = [0 0 0]     len=3 cap=4
+	fmt.Printf(&quot;%v\n%v\n%v\n&quot;, a, b, c)
+}</code></pre>
+    <p><code>make</code> allocates a zeroed array and returns a slice that refers to that array.</p>
+  </section>
+
+  <section class="lesson" id="slices-append">
+    <h2>Appending to a Slice</h2>
+    <pre class="code lang-go"><code>package main
+
+import &quot;fmt&quot;
+
+func main() {
+	var v []int
+	v = append(v, 1, 2, 3)
+	fmt.Println(v)
+
+	w := []int{4, 5, 6}
+	w = append(w, v...)
+	fmt.Println(w)
+}</code></pre>
+    <p><code>append</code> takes a slice <code>s</code> of type <code>[]T</code>, and <code>T</code> values to append to the slice. If the backing array is too small to fit all the values, a bigger array is allocated. <code>nil</code> is the zero value of a slice and can be appended to.</p>
+  </section>
+
+  <section class="lesson" id="maps">
+    <h2>Maps</h2>
+    <pre class="code lang-go"><code>package main
+
+import &quot;fmt&quot;
+
+func main() {
+	// make returns a map of the given type, initialized and ready to use
+	m := make(map[int]int)
+	m[0] = 1
+	m[1] = 2
+
+	v, ok := m[1]
+	if ok {
+		fmt.Println(v)
+	}
+
+	delete(m, 1)
+	fmt.Println(m)
+}</code></pre>
+    <p>A map maps keys to values. <code>make</code> returns a map of the given type, initialized and ready to use. The zero value of a map is <code>nil</code>; a nil map has no keys, nor can keys be added to it.</p>
+  </section>
+
+  <section class="lesson" id="range">
+    <h2>Range</h2>
+    <pre class="code lang-go"><code>package main
+
+import &quot;fmt&quot;
+
+func main() {
+	orange := map[string]byte{&quot;red&quot;: 0xff, &quot;green&quot;: 0x99, &quot;blue&quot;: 0x00}
+
+	for k, v := range orange {
+		fmt.Printf(&quot;%v: %v\n&quot;, k, v)
+	}
+
+	pow := []int{1, 2, 4, 8, 16, 32, 64, 128}
+
+	for i, v := range pow {
+		fmt.Printf(&quot;2**%d = %d\n&quot;, i, v)
+	}
+}</code></pre>
+    <p>The <code>range</code> form of the <code>for</code> loop iterates over a slice or map. Two values are returned for each iteration: index/value for a slice, or key/value for a map.</p>
+  </section>
+
+  <section class="lesson" id="ex-fib">
+    <h2>Exercise: Fibonacci closure</h2>
+    <p>Let&#x27;s have some fun with functions. Implement a <code>fibonacci</code> function that returns a function (a closure) that returns successive Fibonacci numbers (0, 1, 1, 2, 3, 5, ...).</p>
+    <pre class="code lang-go"><code>package main
+
+import &quot;fmt&quot;
+
+// fibonacci is a function that returns a function that returns an int.
+func fibonacci() func() int {
+	// TODO: IMPLEMENT
+}
+
+func main() {
+	f := fibonacci()
+	for i := 0; i &lt; 10; i++ {
+		fmt.Println(f())
+	}
+}</code></pre>
+    <details class="solution"><summary>Show solution</summary><pre class="code lang-go"><code>func fibonacci() func() int {
+	x, y, z := 0, 0, 1
+	return func() int {
+		x, y, z = y, z, y+z
+		return x
+	}
+}</code></pre></details>
+  </section>
+
+  <section class="lesson" id="ex-exp">
+    <h2>Exercise: Exponential function</h2>
+    <p>Implement <code>Exp</code>, which computes the exponential function e^x. You may use the series below; stop when two consecutive sums differ by less than <code>epsilon</code>.</p>
+    <pre class="code lang-go"><code>// Exp computes the exponential function e^x
+func Exp(x, epsilon float64) float64 {
+	// TODO: IMPLEMENT
+}
+
+// You may use the following sum to approximate the exponential function.
+// Stop when two consecutive sums differ by less than epsilon.
+//        ∞
+// e^x =  Σ (x^n)/n!
+//       n=0</code></pre>
+    <details class="solution"><summary>Show solution</summary><pre class="code lang-go"><code>// Exp computes the exponential function e^x
+func Exp(x, epsilon float64) float64 {
+	term := 1.0
+	sum := term
+	for i := float64(0); ; i++ {
+		term = term * (x / (i + 1))
+		if term &lt; epsilon {
+			return sum
+		}
+		sum += term
+	}
+}</code></pre></details>
+  </section>
+
+  <section class="divider" id="session-02">
+    <h1>Session 02: Interfaces</h1>
+  </section>
+
+  <section class="lesson" id="interfaces-intro">
+    <h2>Interfaces</h2>
+    <p>&quot;_Go&#x27;s_most_distinctive_and_powerful_feature._&quot; — Rob Pike</p>
+    <p>&quot;_If_I_could_export_one_feature_of_Go_into_other_languages,_it_would_be_interfaces._&quot; — Russ Cox</p>
+    <figure><img src="../assets/images/the-thinker-pd.jpg" alt="Rodin&#x27;s The Thinker" loading="lazy"><figcaption><strong>OK ... BUT WHY?</strong></figcaption></figure>
+  </section>
+
+  <section class="lesson" id="structs">
+    <h2>Structs</h2>
+    <pre class="code lang-go"><code>package main
+
+import &quot;fmt&quot;
+
+type Vertex struct {
+	x float64
+	y float64
+}
+
+func main() {
+	v1 := Vertex{1, 2}    // has type Vertex
+	p := &amp;Vertex{1, 2}    // has type *Vertex
+	v2 := Vertex{x: 35.0} // y:0 is implicit
+	v3 := Vertex{}        // x:0 and y:0
+
+	fmt.Println(v1, p, v2, v3)
+	v1.x = 42
+	fmt.Println(v1.x)
+}</code></pre>
+    <p>A <code>struct</code> is a collection of fields (and a <code>type</code> declaration does what you&#x27;d expect). Struct fields are accessed using a dot, and can also be accessed through struct pointers.</p>
+  </section>
+
+  <section class="lesson" id="methods">
+    <h2>Methods</h2>
+    <pre class="code lang-go"><code>type Vertex struct {
+	x, y float64
+}
+
+func (v Vertex) Abs() float64 {
+	return math.Sqrt(v.x*v.x + v.y*v.y)
+}
+
+func main() {
+	v := Vertex{3, 5}
+	fmt.Println(v.Abs())
+	fmt.Println(v)
+}</code></pre>
+    <p>A <code>method</code> is a function with a special <em>receiver</em> argument. The receiver appears in its own argument list between the <code>func</code> keyword and the method name. You can declare methods on non-struct types as well.</p>
+  </section>
+
+  <section class="lesson" id="methods-pointer">
+    <h2>Methods with pointer receiver</h2>
+    <pre class="code lang-go"><code>type Vertex struct {
+	x, y float64
+}
+
+func (v *Vertex) Scale(f float64) {
+	v.x *= f
+	v.y *= f
+}
+
+func main() {
+	v := Vertex{3, 5}
+	v.Scale(3)
+	fmt.Println(v)
+}</code></pre>
+    <p>Use a pointer receiver when you need to modify the value the receiver points to, or to avoid copying the value on each method call. In general, all methods on a given type should have either value or pointer receivers — not a mixture of both.</p>
+    <div class="callout tip">Try removing the <code>*</code> from the <code>Scale</code> receiver and observe how the program&#x27;s behaviour changes.</div>
+  </section>
+
+  <section class="lesson" id="interfaces">
+    <h2>Interfaces</h2>
+    <pre class="code lang-go"><code>type Abser interface {
+	Abs() float64
+}</code></pre>
+    <pre class="code lang-go"><code>func main() {
+	var a Abser
+	a = Vertex{3, 5}
+	fmt.Printf(&quot;Abs: %f\n&quot;, a.Abs())
+}</code></pre>
+    <p>An _interface_type_ is defined as a set of method signatures. A value of interface type can hold any value that implements those methods.</p>
+    <div class="callout tip"><strong>Types implicitly satisfy an interface if they implement all required methods.</strong> There is no <code>implements</code> keyword.</div>
+  </section>
+
+  <section class="lesson" id="type-switch">
+    <h2>Type switch</h2>
+    <pre class="code lang-go"><code>type Stringer interface {
+	String() string
+}</code></pre>
+    <pre class="code lang-go"><code>func ToString(any interface{}) string {
+	if v, ok := any.(Stringer); ok {
+		return v.String()
+	}
+	switch v := any.(type) {
+	case Abser:
+		return fmt.Sprintf(&quot;Abs: %v&quot;, v.Abs())
+	case int:
+		return strconv.Itoa(v)
+	case float32:
+		return fmt.Sprintf(&quot;%f&quot;, v)
+	}
+	return &quot;???&quot;
+}</code></pre>
+    <p>A type switch (and the comma-ok type assertion) lets you check dynamically whether a particular interface value has an additional method or concrete type. This is essentially a stripped-down version of what the <code>fmt</code> package does.</p>
+  </section>
+
+  <section class="lesson" id="type-switch-example">
+    <h2>Example</h2>
+    <pre class="code lang-go"><code>func main() {
+	fmt.Println(ToString(35))
+	fmt.Println(ToString(Vertex{3, 5}))
+	fmt.Println(ToString(2.3 + 1.7i))
+	fmt.Println(ToString(time.Minute + time.Second*10))
+}</code></pre>
+    <p><code>time.Duration</code> satisfies our <code>Stringer</code> interface — even though package <code>time</code> does not know about it:</p>
+    <pre class="code lang-go"><code>func (d Duration) String() string { ... }  // package time</code></pre>
+    <p>See <a href="https://pkg.go.dev/time#Duration" target="_blank" rel="noopener">time.Duration</a>. Implicit satisfaction is the key difference from Java, C#, and similar languages: using <code>time</code> does not imply a dependency on the package that declares <code>Stringer</code>.</p>
+  </section>
+
+  <section class="lesson" id="fmt-stringer">
+    <h2>fmt.Stringer</h2>
+    <pre class="code lang-go"><code>func main() {
+	fmt.Println(35)
+	fmt.Println(Vertex{3, 5})
+	fmt.Println(2.3 + 1.7i)
+	fmt.Println(time.Minute + time.Second*10)
+}</code></pre>
+    <p>We don&#x27;t actually need our own <code>ToString</code>. <code>fmt.Println</code> and <code>fmt.Printf</code> work the same way, because they look for the <code>fmt.Stringer</code> interface:</p>
+    <pre class="code lang-go"><code>type Stringer interface {  // package fmt
+	String() string
+}</code></pre>
+    <p>See <a href="https://pkg.go.dev/fmt#Stringer" target="_blank" rel="noopener">fmt.Stringer</a>.</p>
+  </section>
+
+  <section class="lesson" id="errors">
+    <h2>Errors</h2>
+    <p>There is no exception handling. Functions that might fail simply declare an additional return value of type <code>error</code>. This is the <code>error</code> interface:</p>
+    <pre class="code lang-go"><code>type error interface {
+	Error() string
+}</code></pre>
+    <p>A function that might fail, and how to call it:</p>
+    <pre class="code lang-go"><code>func doStuff() (int, error) { ... }
+
+func main() {
+	res, err := doStuff()
+	if err != nil {
+		// handle error
+	} else {
+		// all is good, use result
+	}
+}</code></pre>
+    <p>Go code uses <code>error</code> values to indicate an abnormal state.</p>
+  </section>
+
+  <section class="lesson" id="errors-create">
+    <h2>Errors (continued)</h2>
+    <p>There are at least three ways to create your own <code>errors</code>:</p>
+    <pre class="code lang-go"><code>e1 := errors.New(&quot;This is an error&quot;)
+
+e2 := fmt.Errorf(&quot;IndexError: %d&quot;, i)
+
+// Implementing the Error interface on a custom type
+type HTTPError int
+
+func (h HTTPError) Error() string {
+	return fmt.Sprintf(&quot;Error. Code: %d\n&quot;, int(h))
+}
+
+e3 := HTTPError(403)</code></pre>
+    <div class="callout warn">Since Go 1.13 you should usually <em>wrap</em> errors with <code>fmt.Errorf(&quot;...: %w&quot;, err)</code> and inspect them with <code>errors.Is</code> / <code>errors.As</code>. See <a href="#modern-go">the 2026 update</a>.</div>
+  </section>
+
+  <section class="lesson" id="embedding-types">
+    <h2>Embedding types</h2>
+    <pre class="code lang-go"><code>package main
+
+import &quot;fmt&quot;
+
+type A struct{}
+
+func (a A) Foo() { fmt.Println(&quot;Foo on A&quot;) }
+func (a A) Bar() { fmt.Println(&quot;Bar on A&quot;) }
+
+type B struct {
+	A
+}
+
+func (b B) Bar() { fmt.Println(&quot;Bar on B&quot;) }
+
+func main() {
+	b := B{}
+	b.Foo()
+	b.Bar()
+}</code></pre>
+    <p>Embed types within a struct to &quot;borrow&quot; pieces of an implementation. Embedding differs from subclassing: when embedded methods are invoked, the receiver is the inner type. Go does not provide a type-driven notion of subclassing.</p>
+  </section>
+
+  <section class="lesson" id="embedding-interfaces">
+    <h2>Embedding interfaces</h2>
+    <pre class="code lang-go"><code>type Reader interface {
+	Read(p []byte) (n int, err error)
+}
+
+type Writer interface {
+	Write(p []byte) (n int, err error)
+}
+
+// ReadWriter is the interface that combines the Reader and Writer interfaces.
+type ReadWriter interface {
+	Reader
+	Writer
+}</code></pre>
+    <p>Interfaces can be composed by embedding. <code>io.ReadWriter</code> is exactly this combination in the standard library.</p>
+  </section>
+
+  <section class="lesson" id="hello-net">
+    <h2>Hello, net</h2>
+    <pre class="code lang-go"><code>package main
+
+import (
+	&quot;fmt&quot;
+	&quot;net&quot;
+)
+
+func main() {
+	l, _ := net.Listen(&quot;tcp&quot;, &quot;localhost:3333&quot;)
+	defer l.Close()
+
+	for {
+		conn, _ := l.Accept()
+		fmt.Fprintln(conn, &quot;Hello!&quot;)
+		conn.Close()
+	}
+}</code></pre>
+    <div class="callout tip">Error checking is omitted for brevity.</div>
+  </section>
+
+  <section class="lesson" id="hello-net-2">
+    <h2>Hello, net (continued)</h2>
+    <p>We just used <code>Fprintln</code> to write to a network connection. That works because <code>Fprintln</code> writes to an <code>io.Writer</code>, and <code>net.Conn</code> is an <code>io.Writer</code>:</p>
+    <pre class="code lang-go"><code>func Fprintln(w io.Writer, a ...interface{}) (n int, err error)  // package fmt
+
+type Writer interface {                                          // package io
+	Write(p []byte) (n int, err error)
+}
+
+type Conn interface {                                            // package net
+	Read(b []byte) (n int, err error)
+	Write(b []byte) (n int, err error)
+	Close() error
+	...
+}</code></pre>
+  </section>
+
+  <section class="lesson" id="interfaces-summary">
+    <h2>Summary</h2>
+    <ul>
+      <li>Go&#x27;s interfaces are satisfied <em>implicitly</em>, which makes them feel lightweight and engaging to use.</li>
+      <li>They enable true component architectures, with a profound effect on library design — <code>io.Reader</code> and <code>io.Writer</code> generalize the Unix pipe idea.</li>
+      <li>Implicit conversions are checked at compile time.</li>
+      <li>Explicit interface-to-interface conversions can inquire about method sets at run time.</li>
+    </ul>
+  </section>
+
+  <section class="lesson" id="ex-sortable">
+    <h2>Exercise: Sortable ByteSlice</h2>
+    <p>For a new type <code>ByteSlice</code>, implement the methods needed to satisfy <code>sort.Interface</code>:</p>
+    <pre class="code lang-go"><code>type Interface interface {
+	Len() int           // number of elements in the collection
+	Less(i, j int) bool // reports whether element i sorts before element j
+	Swap(i, j int)      // swaps elements i and j
+}
+
+func Sort(data Interface)</code></pre>
+    <pre class="code lang-go"><code>package main
+
+import (
+	&quot;fmt&quot;
+	&quot;sort&quot;
+)
+
+type ByteSlice []byte
+
+// TODO: implement methods of sort.Interface
+// func (b ByteSlice) Len() int { ... }
+// ...
+
+func main() {
+	b := ByteSlice{2, 0, 133, 44, 10, 200}
+	sort.Sort(b)
+	fmt.Println(b)
+	// Output: [0 2 10 44 133 200]
+}</code></pre>
+    <details class="solution"><summary>Show solution</summary><pre class="code lang-go"><code>func (b ByteSlice) Len() int           { return len(b) }
+func (b ByteSlice) Less(i, j int) bool { return b[i] &lt; b[j] }
+func (b ByteSlice) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }</code></pre></details>
+  </section>
+
+  <section class="lesson" id="ex-intreader">
+    <h2>Exercise: IntReader</h2>
+    <p>Implement a type that satisfies a <code>ReadCloser</code> interface and fills a byte slice. Handy conversions:</p>
+    <pre class="code lang-go"><code>convert int to string:        strconv.Itoa(int) string
+convert string to byte-slice: []byte(string)</code></pre>
+    <details class="solution"><summary>Show solution</summary><pre class="code lang-go"><code>type ReadCloser interface {
+	Read([]byte) (int, error)
+	Close() error
+}
+
+type ByteReader byte
+
+func (r ByteReader) Close() error { return nil }
+
+func (r ByteReader) Read(p []byte) (int, error) {
+	if len(p) &lt; 1 {
+		return 0, fmt.Errorf(&quot;no space!&quot;)
+	}
+	p[0] = byte(r)
+	return 1, nil
+}
+
+func ReadAndClose(r ReadCloser, b []byte) (int, error) {
+	nx, n := 0, 0
+	var err error
+	for len(b) &gt; 0 &amp;&amp; err == nil {
+		n, err = r.Read(b)
+		nx += n
+		b = b[n:]
+	}
+	r.Close()
+	return nx, err
+}</code></pre></details>
+  </section>
+
+  <section class="divider" id="session-03">
+    <h1>Session 03: Concurrency</h1>
+  </section>
+
+  <section class="lesson" id="concurrency">
+    <h2>Concurrency</h2>
+    <p>Concurrency is the ability to write your program as independently executing pieces. <strong>Concurrency is not parallelism!</strong> But it raises some questions:</p>
+    <ul>
+      <li>What are <em>goroutines</em>?</li>
+      <li>What are <em>channels</em>?</li>
+      <li>What&#x27;s a <em>select</em>-statement?</li>
+    </ul>
+    <div class="callout tip">Keep in mind the Go proverb: <em>&quot;Don&#x27;t communicate by sharing memory; share memory by communicating.&quot;</em></div>
+  </section>
+
+  <section class="lesson" id="goroutines">
+    <h2>Goroutines</h2>
+    <pre class="code lang-go"><code>package main
+
+import &quot;fmt&quot;
+import &quot;time&quot;
+
+func say(what string, after int) {
+	for {
+		time.Sleep(time.Duration(after) * time.Millisecond)
+		fmt.Println(what)
+	}
+}
+
+func main() {
+	go say(&quot;Marco&quot;, 100)
+	go say(&quot;Polo&quot;, 500)
+	time.Sleep(3 * time.Second)
+}</code></pre>
+    <p>A goroutine is an independently executing function, launched by a <code>go</code> statement. Goroutines are multiplexed dynamically onto threads as needed to keep them all running. Think of them as very cheap threads — each has its own call stack that grows and shrinks as required. It is practical to have hundreds of thousands of goroutines in a single program.</p>
+  </section>
+
+  <section class="lesson" id="channels">
+    <h2>Channels</h2>
+    <p>A channel provides a connection between two goroutines, allowing them to communicate.</p>
+    <pre class="code lang-go"><code>// Declaring and initializing.
+var c chan int
+c = make(chan int)
+// or
+c := make(chan int)
+
+// Sending on a channel.
+c &lt;- 1
+
+// Receiving from a channel.
+// The &quot;arrow&quot; indicates the direction of data flow.
+value = &lt;-c</code></pre>
+  </section>
+
+  <section class="lesson" id="communicating-goroutines">
+    <h2>Communicating Goroutines</h2>
+    <pre class="code lang-go"><code>func say(what string, after int, c chan int) {
+	for {
+		v := &lt;-c
+		fmt.Println(what, v)
+		c &lt;- v + 1
+		time.Sleep(time.Duration(after) * time.Millisecond)
+	}
+}
+
+func main() {
+	c := make(chan int)
+	go say(&quot;Marco&quot;, 100, c)
+	go say(&quot;Polo&quot;, 500, c)
+	c &lt;- 0
+	time.Sleep(5 * time.Second)
+}</code></pre>
+    <p>Using a channel, the two goroutines hand a value back and forth — passing the ball like Marco Polo.</p>
+  </section>
+
+  <section class="lesson" id="select">
+    <h2>Select</h2>
+    <pre class="code lang-go"><code>select {
+case v1 := &lt;-c1:
+	fmt.Printf(&quot;recv %v from channel c1&quot;, v1)
+case v2 := &lt;-c2:
+	fmt.Printf(&quot;recv %v from channel c2&quot;, v2)
+case c3 &lt;- 42:
+	fmt.Printf(&quot;sent %v to channel c3&quot;, 42)
+default:
+	fmt.Println(&quot;no communication&quot;)
+}</code></pre>
+    <p><code>select</code> works like a <code>switch</code> where each case is a communication. It blocks until one communication can proceed, which then does. A <code>default</code> clause, if present, executes immediately when no channel is ready. All channels are evaluated; if multiple can proceed, <code>select</code> chooses pseudo-randomly.</p>
+  </section>
+
+  <section class="lesson" id="communicating-goroutines-2">
+    <h2>Communicating Goroutines (with select)</h2>
+    <pre class="code lang-go"><code>func say(what string, after int, c chan int) {
+	var v int
+	for {
+		select {
+		case &lt;-time.After(200 * time.Millisecond):
+			fmt.Println(what, &quot;waiting...&quot;)
+		case v = &lt;-c:
+			fmt.Println(what, v)
+			v++
+		case c &lt;- v:
+			v++
+			time.Sleep(time.Duration(after) * time.Millisecond)
+		}
+	}
+}
+
+func main() {
+	c := make(chan int)
+	go say(&quot;Marco&quot;, 100, c)
+	go say(&quot;Polo&quot;, 500, c)
+	c &lt;- 0
+	time.Sleep(5 * time.Second)
+}</code></pre>
+  </section>
+
+  <section class="lesson" id="generator">
+    <h2>Generator</h2>
+    <pre class="code lang-go"><code>func say(what string, after int) &lt;-chan string {
+	c := make(chan string)
+	go func() {
+		for i := 0; ; i++ {
+			c &lt;- fmt.Sprintf(&quot;%s %d&quot;, what, i)
+			time.Sleep(time.Duration(after) * time.Millisecond)
+		}
+	}()
+	return c
+}
+
+func main() {
+	c1 := say(&quot;Marco&quot;, 100)
+	c2 := say(&quot;Polo&quot;, 500)
+	for i := 0; i &lt; 20; i++ {
+		fmt.Println(&lt;-c1)
+		fmt.Println(&lt;-c2)
+	}
+}</code></pre>
+    <p>A function can launch a goroutine and return a channel, letting callers consume a stream of values. This is the <em>generator</em> pattern.</p>
+  </section>
+
+  <section class="lesson" id="multiplexer">
+    <h2>Multiplexer</h2>
+    <pre class="code lang-go"><code>func fanIn(in1, in2 &lt;-chan string) &lt;-chan string {
+	c := make(chan string)
+	go func() {
+		for {
+			select {
+			case v := &lt;-in1:
+				c &lt;- v
+			case v := &lt;-in2:
+				c &lt;- v
+			}
+		}
+	}()
+	return c
+}</code></pre>
+    <pre class="code lang-go"><code>func main() {
+	c := fanIn(say(&quot;Marco&quot;, 100), say(&quot;Polo&quot;, 500))
+	for i := 0; i &lt; 20; i++ {
+		fmt.Println(&lt;-c)
+	}
+}</code></pre>
+    <p><code>fanIn</code> merges two input channels into one — the <em>fan-in</em> or multiplexer pattern.</p>
+  </section>
+
+  <section class="lesson" id="daisy-chain">
+    <h2>Daisy-chain</h2>
+    <pre class="code lang-go"><code>func f(left, right chan int) {
+	left &lt;- 1 + &lt;-right
+}
+
+func main() {
+	const n = 10000
+	leftmost := make(chan int)
+	right := leftmost
+	left := leftmost
+	for i := 0; i &lt; n; i++ {
+		right = make(chan int)
+		go f(left, right)
+		left = right
+	}
+	go func(c chan int) { c &lt;- 1 }(right)
+	fmt.Println(&lt;-leftmost)
+}</code></pre>
+    <p>Ten thousand goroutines chained together, each adding one to the value it receives from the right and passing it to the left.</p>
+  </section>
+
+  <section class="lesson" id="quit-chan">
+    <h2>Quit chan</h2>
+    <pre class="code lang-go"><code>func f(c chan int, quit chan bool) {
+	var v int
+	for {
+		select {
+		case &lt;-quit:
+			close(c)
+			return
+		case c &lt;- v:
+			v++
+			time.Sleep(100 * time.Millisecond)
+		}
+	}
+}
+
+func main() {
+	c, q := make(chan int), make(chan bool)
+	go func() { time.Sleep(3 * time.Second); q &lt;- true }()
+	go f(c, q)
+	for v := range c {
+		fmt.Println(v)
+	}
+}</code></pre>
+    <p>A second channel signals the worker to stop. Closing the data channel lets the <code>range</code> loop in <code>main</code> terminate cleanly.</p>
+    <div class="callout warn">Today this is usually expressed with <code>context.Context</code> for cancellation — see <a href="#modern-go">the 2026 update</a>.</div>
+  </section>
+
+  <section class="lesson" id="concurrency-so">
+    <h2>So...</h2>
+    <ul>
+      <li><em>Goroutines</em> are independently executing functions, launched by <code>go</code> statements.</li>
+      <li><em>Channels</em> are typed conduits enabling goroutines to communicate.</li>
+      <li><em>Select</em> is a control structure unique to concurrency.</li>
+    </ul>
+  </section>
+
+  <section class="lesson" id="ex-philosophers">
+    <h2>Exercise: Dining Philosophers</h2>
+    <figure><img src="../assets/images/dining-philosophers-cc3.png" alt="An illustration of the dining philosophers problem" loading="lazy"></figure>
+    <p>Implement <code>dine</code> so that the philosophers can eat without deadlocking. Each chopstick is represented by a channel.</p>
+    <pre class="code lang-go"><code>func dine(name string, left, right chan bool) {
+	// TODO: IMPLEMENT
+}
+
+func main() {
+	cs := []chan bool{make(chan bool), make(chan bool), make(chan bool)}
+	names := []string{&quot;Hume&quot;, &quot;Heidegger&quot;, &quot;Kant&quot;}
+
+	for i := range cs {
+		go dine(names[i], cs[i], cs[(i+1)%3])
+		go func(i int) { cs[i] &lt;- true }(i)
+	}
+	time.Sleep(5 * time.Second)
+}</code></pre>
+    <details class="solution"><summary>Show solution</summary><pre class="code lang-go"><code>func dine(name string, left, right chan bool) {
+	for {
+		&lt;-left
+		fmt.Println(name, &quot;acquired left chopstick.&quot;)
+		select {
+		case &lt;-right:
+			fmt.Println(name, &quot;acquired right chopstick.&quot;)
+			fmt.Println(name, &quot;dining...&quot;)
+			time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
+			go func() {
+				left &lt;- true
+				right &lt;- true
+			}()
+			fmt.Println(name, &quot;DONE.&quot;)
+			return
+		case &lt;-time.After(150 * time.Millisecond):
+			fmt.Println(name, &quot;thinking...&quot;)
+			go func() { left &lt;- true }()
+		}
+	}
+}</code></pre></details>
+  </section>
+
+  <section class="divider" id="conclusion">
+    <h1>Conclusion</h1>
+  </section>
+
+  <section class="lesson" id="conclusion-body">
+    <h2>Conclusion</h2>
+    <p>Go is an <strong>efficient</strong>, <strong>compiled</strong> programming language that feels <strong>lightweight</strong> and <strong>pleasant</strong>.</p>
+    <ul>
+      <li>Implicit satisfaction of interfaces</li>
+      <li>Composition instead of inheritance</li>
+      <li>Struct embedding</li>
+      <li>Concurrency approach: _share_memory_by_communicating_</li>
+    </ul>
+  </section>
+
+  <section class="divider" id="modern-go">
+    <h1>Is this still idiomatic Go?</h1>
+    <p class="section-sub">What changed since 2017</p>
+  </section>
+
+  <section class="lesson" id="modern-intro">
+    <h2>The good news: the fundamentals still hold</h2>
+    <p>This tutorial was written in May 2017, around Go 1.8. Thanks to the <a href="https://go.dev/doc/go1compat" target="_blank" rel="noopener">Go 1 compatibility promise</a>, essentially every program shown here still compiles and runs in 2026 (the current release is Go 1.26, February 2026). Packages, slices, maps, methods, interfaces, goroutines, channels and <code>select</code> are taught exactly the same way today.</p>
+    <p>What <em>has</em> changed is the workflow around the language and a handful of idioms. Two slides in this deck are now actively misleading — &quot;no generics&quot; and the whole <code>GOPATH</code>/workspace setup — and there is a decade of new standard-library and language features worth knowing. The rest of this section summarizes them.</p>
+  </section>
+
+  <section class="lesson" id="modern-modules">
+    <h2>Workflow: modules replaced GOPATH (Go 1.11, 2018)</h2>
+    <p>The biggest change for newcomers. The &quot;Creating a Workspace&quot; and &quot;Creating and Running Go Programs&quot; slides describe the old <code>GOPATH</code> model, where all code lived under <code>$GOPATH/src/...</code>. That model is obsolete.</p>
+    <pre class="code lang-shell"><code># 2017 workflow (obsolete): code had to live under $GOPATH/src
+$ export GOPATH=$HOME/gocode
+$ mkdir -p $GOPATH/src/github.com/user/hello</code></pre>
+    <p>Today every project is a <em>module</em> with a <code>go.mod</code> file and can live anywhere on disk. Dependencies are versioned and recorded automatically:</p>
+    <pre class="code lang-shell"><code># 2026 workflow: a module can live anywhere on disk
+$ mkdir hello &amp;&amp; cd hello
+$ go mod init github.com/user/hello   # creates go.mod
+$ go run .
+
+# add a dependency – it is recorded in go.mod / go.sum automatically
+$ go get rsc.io/quote</code></pre>
+    <div class="callout tip"><code>GOROOT</code>/<code>GOPATH</code> almost never need to be set by hand anymore. Install tools with <code>go install pkg@version</code>; <code>go get</code> is now only for managing module dependencies.</div>
+  </section>
+
+  <section class="lesson" id="modern-generics">
+    <h2>Generics (Go 1.18, 2022)</h2>
+    <p>The &quot;What is different?&quot; slide lists &quot;no generics&quot;. This is the single most important update: Go added type parameters in 2022.</p>
+    <pre class="code lang-go"><code>import &quot;cmp&quot;
+
+// One generic function instead of one per type.
+func Max[T cmp.Ordered](a, b T) T {
+	if a &gt; b {
+		return a
+	}
+	return b
+}
+
+func main() {
+	fmt.Println(Max(3, 5))       // ints
+	fmt.Println(Max(&quot;a&quot;, &quot;b&quot;))   // strings
+}</code></pre>
+    <p>Generics power new standard-library packages (<code>slices</code>, <code>maps</code>, <code>cmp</code>) and let you write type-safe containers and algorithms without <code>interface{}</code> and reflection. Go 1.24 added generic type aliases, and Go 1.26 lets generic types refer to themselves in their own type-parameter list.</p>
+  </section>
+
+  <section class="lesson" id="modern-any">
+    <h2>any replaces interface{} (Go 1.18)</h2>
+    <p><code>any</code> is now a built-in alias for <code>interface{}</code>. It is the idiomatic spelling — the type switch and <code>ToString</code> examples in Session 02 would use <code>any</code> today.</p>
+    <pre class="code lang-go"><code>// 2017
+func ToString(any interface{}) string { ... }
+
+// 2026: `any` is a built-in alias for interface{} (Go 1.18)
+func ToString(v any) string { ... }</code></pre>
+  </section>
+
+  <section class="lesson" id="modern-errors">
+    <h2>Error wrapping (Go 1.13 / 1.20)</h2>
+    <p>The Errors slides predate Go&#x27;s error-wrapping support. The <code>error</code> interface is unchanged, but the idiom for adding context and inspecting errors is new:</p>
+    <pre class="code lang-go"><code>// Wrap an error with context (Go 1.13)
+if err != nil {
+	return fmt.Errorf(&quot;loading config: %w&quot;, err)
+}
+
+// Inspect a wrapped error chain
+if errors.Is(err, os.ErrNotExist) { ... }
+
+var perr *fs.PathError
+if errors.As(err, &amp;perr) { ... }
+
+// Combine several errors (Go 1.20)
+err := errors.Join(err1, err2)</code></pre>
+    <ul>
+      <li><code>fmt.Errorf</code> with the <code>%w</code> verb wraps an error, preserving the chain.</li>
+      <li><code>errors.Is</code> checks for a sentinel error anywhere in the chain; <code>errors.As</code> extracts a concrete error type.</li>
+      <li><code>errors.Join</code> (Go 1.20) combines multiple errors into one.</li>
+    </ul>
+  </section>
+
+  <section class="lesson" id="modern-loopvar">
+    <h2>Loop variable semantics changed (Go 1.22, 2024)</h2>
+    <p>This one quietly affects several examples in Session 03. Before Go 1.22, a <code>for</code> loop reused a single variable across iterations, so capturing it in a goroutine was a notorious bug — which is exactly why the daisy-chain and dining-philosophers code passes the loop variable as an argument (<code>go func(i int){...}(i)</code>).</p>
+    <pre class="code lang-go"><code>// 2017: each goroutine captured the SAME variable i – a classic bug.
+for i := 0; i &lt; n; i++ {
+	go func(i int) { use(i) }(i) // had to pass i as an argument
+}
+
+// Go 1.22+: loop variables are per-iteration. This is now correct:
+for i := 0; i &lt; n; i++ {
+	go func() { use(i) }()
+}
+
+// Go 1.22 also lets you range over an integer:
+for i := range 10 {
+	fmt.Println(i)
+}</code></pre>
+    <div class="callout tip">As of Go 1.22 each iteration gets a fresh variable, so the explicit argument-passing workaround is no longer needed. Old code keeps working; new code can be simpler.</div>
+  </section>
+
+  <section class="lesson" id="modern-stdlib">
+    <h2>New standard-library staples</h2>
+    <h3>slices, maps, cmp (Go 1.21)</h3>
+    <p>Generic helpers that replace a lot of hand-written boilerplate. The &quot;Sortable ByteSlice&quot; exercise is now a one-liner:</p>
+    <pre class="code lang-go"><code>import &quot;slices&quot;
+
+// The &quot;Sortable ByteSlice&quot; exercise in one line (Go 1.21):
+b := []byte{2, 0, 133, 44, 10, 200}
+slices.Sort(b)
+
+slices.Contains(b, 10)
+slices.Max(b)</code></pre>
+    <h3>Builtins: min, max, clear (Go 1.21)</h3>
+    <p><code>min</code>, <code>max</code> and <code>clear</code> are now built into the language.</p>
+    <h3>Structured logging: log/slog (Go 1.21)</h3>
+    <p>A structured, leveled logging package in the standard library — the modern default over the bare <code>log</code> package.</p>
+    <h3>Embedding files: embed (Go 1.16)</h3>
+    <p>The <code>//go:embed</code> directive bundles static files (HTML, templates, assets) directly into the binary — this very web page could be served from a single Go executable.</p>
+  </section>
+
+  <section class="lesson" id="modern-iterators">
+    <h2>Iterators and range-over-func (Go 1.23)</h2>
+    <p>Go 1.22 added ranging over an integer; Go 1.23 added ranging over a <em>function</em>, plus the <code>iter</code> package. Many of the channel-based generator patterns from Session 03 can now be written as iterators when you don&#x27;t actually need concurrency:</p>
+    <pre class="code lang-go"><code>// Go 1.23: range over a function (iterator). The generator pattern from
+// Session 03 can now be expressed without channels:
+func Count(n int) iter.Seq[int] {
+	return func(yield func(int) bool) {
+		for i := 0; i &lt; n; i++ {
+			if !yield(i) {
+				return
+			}
+		}
+	}
+}
+
+func main() {
+	for v := range Count(5) {
+		fmt.Println(v)
+	}
+}</code></pre>
+  </section>
+
+  <section class="lesson" id="modern-misc">
+    <h2>Other changes worth knowing</h2>
+    <ul>
+      <li><strong>context.Context</strong> — the standard mechanism for cancellation and deadlines; it largely replaces the manual &quot;quit channel&quot; pattern.</li>
+      <li><strong>math/rand/v2</strong> (Go 1.22/1.23) — auto-seeded, cleaner API. <code>rand.Intn</code> becomes <code>rand.IntN</code>; manual <code>rand.Seed</code> is gone/deprecated.</li>
+      <li><strong>Fuzzing</strong> (Go 1.18) — native fuzz testing via <code>go test -fuzz</code>.</li>
+      <li><strong>Workspaces</strong> (<code>go.work</code>, Go 1.18) — work on several modules at once.</li>
+      <li><strong>Profile-guided optimization</strong> (PGO, Go 1.21) — feed profiles back to the compiler for faster binaries.</li>
+      <li><strong>Enhanced net/http routing</strong> (Go 1.22) — method- and wildcard-aware patterns in <code>http.ServeMux</code>.</li>
+      <li><strong>Concurrency testing &amp; helpers</strong> — <code>testing/synctest</code> and <code>WaitGroup.Go</code> (Go 1.25).</li>
+      <li><strong>Runtime</strong> — the new &quot;Green Tea&quot; garbage collector is on by default in Go 1.26.</li>
+    </ul>
+    <pre class="code lang-go"><code>// 2017
+fmt.Println(rand.Intn(10))      // math/rand, needed manual rand.Seed
+
+// 2026
+fmt.Println(rand.IntN(10))      // math/rand/v2, auto-seeded (Go 1.22/1.23)</code></pre>
+  </section>
+
+  <section class="lesson" id="modern-idioms">
+    <h2>Quick idiom checklist for modernizing this code</h2>
+    <ul>
+      <li>Replace the <code>GOPATH</code>/workspace setup with <code>go mod init</code>.</li>
+      <li>Write <code>any</code> instead of <code>interface{}</code>.</li>
+      <li>Reach for generics (or <code>slices</code>/<code>maps</code>) instead of <code>interface{}</code> + type assertions where it fits.</li>
+      <li>Wrap errors with <code>%w</code>; inspect with <code>errors.Is</code>/<code>errors.As</code>.</li>
+      <li>Drop the <code>go func(i int){...}(i)</code> loop-variable workaround (Go 1.22+).</li>
+      <li>Use <code>rand.IntN</code> from <code>math/rand/v2</code>; no manual seeding.</li>
+      <li>Prefer <code>context.Context</code> over ad-hoc quit channels for cancellation.</li>
+      <li>Use <code>log/slog</code> for structured logging.</li>
+    </ul>
+  </section>
+
+  <section class="divider" id="references">
+    <h1>References</h1>
+  </section>
+
+  <section class="lesson" id="references-body">
+    <h2>References</h2>
+    <h3>Further reading (added 2026)</h3>
+    <ul>
+      <li><a href="https://go.dev/doc/devel/release" target="_blank" rel="noopener">Go release notes &amp; history</a></li>
+      <li><a href="https://go.dev/tour/" target="_blank" rel="noopener">A Tour of Go</a></li>
+      <li><a href="https://go.dev/doc/effective_go" target="_blank" rel="noopener">Effective Go</a></li>
+      <li><a href="https://go.dev/doc/tutorial/generics" target="_blank" rel="noopener">Go 1.18 generics tutorial</a></li>
+      <li><a href="https://go.dev/blog/go1.13-errors" target="_blank" rel="noopener">Working with errors in Go 1.13</a></li>
+      <li><a href="https://go.dev/blog/using-go-modules" target="_blank" rel="noopener">Using Go modules</a></li>
+    </ul>
+    <h3>Images (in order of occurrence)</h3>
+    <ul>
+      <li><a href="https://www.flickr.com/photos/si-mocs/31131827236" target="_blank" rel="noopener">Language is the first weapon drawn in conflict (by _Simon_Liu_)</a> — <a href="https://creativecommons.org/licenses/by-nc-sa/2.0/" target="_blank" rel="noopener">CC BY-NC-SA 2.0</a></li>
+      <li><a href="https://pixabay.com/en/the-thinker-rodin-paris-sculpture-692959/" target="_blank" rel="noopener">The Thinker</a> — CC0 Public Domain</li>
+      <li><a href="https://de.wikipedia.org/wiki/Philosophenproblem" target="_blank" rel="noopener">An illustration of the dining philosophers problem (by _Benjamin_D.<em>Esham</em>)</a> — <a href="https://creativecommons.org/licenses/by-sa/3.0/deed.de" target="_blank" rel="noopener">CC BY-SA 3.0</a></li>
+    </ul>
+    <p>Original talk: <em>Rapid Introduction to Go</em>, Oberseminar 2017, Albert-Ludwigs-Universität Freiburg. Tim Schulte · schultetp@gmail.com</p>
+  </section>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Originally presented as a <code>present</code> (.slide) deck, May 2017 · Albert-Ludwigs-Universität Freiburg.
+  Rendered as a static page in 2026 — no external dependencies.</p>
+  <p><a href="../index.html">&larr; All notes</a></p>
+</footer>
+<script>
+
+(function(){
+  // mobile TOC toggle
+  var toggle=document.getElementById('toc-toggle');
+  var body=document.body;
+  toggle&&toggle.addEventListener('click',function(){
+    var open=body.classList.toggle('toc-open');
+    toggle.setAttribute('aria-expanded',open?'true':'false');
+  });
+  // close TOC after clicking a link (mobile)
+  document.querySelectorAll('#toc a').forEach(function(a){
+    a.addEventListener('click',function(){body.classList.remove('toc-open');});
+  });
+
+  // active-section highlighting
+  var links={};
+  document.querySelectorAll('#toc a').forEach(function(a){
+    var id=a.getAttribute('href').slice(1);links[id]=a;
+  });
+  var sections=Array.prototype.slice.call(document.querySelectorAll('section[id]'));
+  var current=null;
+  function setActive(id){
+    if(id===current)return;current=id;
+    for(var k in links)links[k].classList.remove('active');
+    var link=links[id];
+    if(link){link.classList.add('active');
+      // ensure visible in sidebar
+      link.scrollIntoView({block:'nearest'});
+    }
+  }
+  var io=new IntersectionObserver(function(entries){
+    var visible=entries.filter(function(e){return e.isIntersecting;});
+    if(visible.length){
+      visible.sort(function(a,b){return a.boundingClientRect.top-b.boundingClientRect.top;});
+      setActive(visible[0].target.id);
+    }
+  },{rootMargin:'-70px 0px -65% 0px',threshold:0});
+  sections.forEach(function(s){io.observe(s);});
+
+  // ---- lightweight Go / shell syntax highlighter (dependency-free) ----
+  var KW=['break','case','chan','const','continue','default','defer','else',
+    'fallthrough','for','func','go','goto','if','import','interface','map',
+    'package','range','return','select','struct','switch','type','var'];
+  var BI=['append','cap','clear','close','complex','copy','delete','imag','len',
+    'make','max','min','new','panic','print','println','real','recover',
+    'nil','true','false','iota','any','error',
+    'bool','byte','rune','string','int','int8','int16','int32','int64',
+    'uint','uint8','uint16','uint32','uint64','uintptr','float32','float64',
+    'complex64','complex128'];
+  var kwRe=new RegExp('\\b('+KW.join('|')+')\\b','g');
+  var biRe=new RegExp('\\b('+BI.join('|')+')\\b','g');
+  var numRe=/\b(0[xX][0-9a-fA-F]+|\d+\.?\d*([eE][-+]?\d+)?i?)\b/g;
+
+  function hlGo(text){
+    // text is already HTML-escaped (& < >). Quotes are literal.
+    var tokenRe=/(\/\/[^\n]*)|(`[^`]*`)|("(?:\\.|[^"\\\n])*")|('(?:\\.|[^'\\\n])*')/g;
+    var out='',last=0,m;
+    function plain(s){
+      s=s.replace(kwRe,'<span class="tok-kw">$1</span>');
+      s=s.replace(biRe,'<span class="tok-typ">$1</span>');
+      s=s.replace(numRe,'<span class="tok-num">$&</span>');
+      return s;
+    }
+    while((m=tokenRe.exec(text))!==null){
+      out+=plain(text.slice(last,m.index));
+      if(m[1])out+='<span class="tok-com">'+m[1]+'</span>';
+      else out+='<span class="tok-str">'+m[0]+'</span>';
+      last=tokenRe.lastIndex;
+    }
+    out+=plain(text.slice(last));
+    return out;
+  }
+  function hlShell(text){
+    return text.split('\n').map(function(line){
+      var i=line.indexOf('#');
+      if(i>=0){
+        // crude: treat # as comment when it starts a token
+        var before=line.slice(0,i),after=line.slice(i);
+        if(/^\s*$/.test(before)||/\s$/.test(before))
+          return before+'<span class="tok-com">'+after+'</span>';
+      }
+      return line;
+    }).join('\n');
+  }
+
+  document.querySelectorAll('pre.code > code').forEach(function(c){
+    var pre=c.parentNode;
+    if(pre.classList.contains('lang-go'))c.innerHTML=hlGo(c.innerHTML);
+    else if(pre.classList.contains('lang-shell'))c.innerHTML=hlShell(c.innerHTML);
+  });
+})();
+
+</script>
+</body>
+</html>
