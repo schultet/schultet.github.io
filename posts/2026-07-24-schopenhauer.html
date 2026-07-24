@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arthur Schopenhauer — Eine Dokumentation &middot; Append-Only</title>
+<style>
+  :root{
+    --ink: #1b1814;
+    --ink-soft: #292319;
+    --ink-line: #3a3225;
+    --paper: #f3ead9;
+    --paper-card: #fbf6ea;
+    --paper-line: #d9c9a4;
+    --text-main: #2a2317;
+    --text-soft: #6b5d45;
+    --amber: #a8531d;
+    --amber-dark: #80391a;
+    --teal: #4d6960;
+    --teal-soft: #e4ebe7;
+    --code-bg: #e9dcbe;
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+    --font-body: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --maxw: 740px;
+    --sidebar-w: 270px;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior: auto; }
+    *{ transition: none !important; animation: none !important; }
+  }
+
+  body{
+    margin:0;
+    background: var(--paper);
+    color: var(--text-main);
+    font-family: var(--font-body);
+    line-height: 1.65;
+    font-size: 17px;
+  }
+
+  a{ color: var(--amber-dark); text-decoration: none; border-bottom: 1px solid rgba(168,83,29,0.35); }
+  a:hover{ border-bottom-color: var(--amber-dark); }
+
+  :focus-visible{
+    outline: 2px solid var(--teal);
+    outline-offset: 3px;
+  }
+
+  h1,h2,h3,h4{
+    font-family: var(--font-display);
+    color: var(--ink);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    background: radial-gradient(circle at 18% 18%, #2a241a 0%, var(--ink) 55%, #14110d 100%);
+    color: #ece3cf;
+    padding: 5.5rem 1.5rem 4rem;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 6px solid var(--amber-dark);
+  }
+  .hero::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image: radial-gradient(rgba(243,234,217,0.05) 1px, transparent 1px);
+    background-size: 14px 14px;
+    opacity:.5;
+  }
+  .hero-inner{
+    max-width: 980px; margin: 0 auto; position: relative; z-index:1;
+  }
+  .hero .backlink{
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: .8rem;
+    letter-spacing: .04em;
+    color: #d8cdb3;
+    border-bottom: 1px solid rgba(216,205,179,.35);
+    margin: 0 0 1.8rem;
+    padding-bottom: 1px;
+  }
+  .hero .backlink:hover{ color: #f6efdd; border-bottom-color: #f6efdd; }
+  .eyebrow{
+    font-family: var(--font-mono);
+    font-size: .78rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #c98a4a;
+    margin: 0 0 1rem;
+  }
+  .hero h1{
+    color: #f6efdd;
+    font-size: clamp(2.6rem, 6vw, 4.4rem);
+    margin: 0 0 .6rem;
+    letter-spacing: .01em;
+  }
+  .hero h1 em{
+    font-style: italic;
+    color: #c98a4a;
+  }
+  .hero p.lede{
+    max-width: 640px;
+    font-size: 1.18rem;
+    color: #d8cdb3;
+    margin: 0 0 2.2rem;
+  }
+  .hero-meta{
+    display:flex; flex-wrap: wrap; gap: .6rem;
+    font-family: var(--font-mono);
+    font-size: .82rem;
+  }
+  .hero-meta span{
+    border: 1px solid rgba(201,138,74,.45);
+    color: #d8cdb3;
+    padding: .35rem .7rem;
+    border-radius: 3px;
+    background: rgba(201,138,74,.07);
+  }
+  .hero-cta{
+    margin-top: 2.4rem;
+    display:flex; gap: .8rem; flex-wrap: wrap;
+  }
+  .btn{
+    font-family: var(--font-mono);
+    font-size: .85rem;
+    padding: .65rem 1.1rem;
+    border-radius: 3px;
+    border: 1px solid var(--amber);
+    color: #f6efdd;
+    background: var(--amber-dark);
+    cursor:pointer;
+  }
+  .btn:hover{ background: var(--amber); border-bottom: none;}
+  .btn.ghost{
+    background: transparent;
+    color: #e4d8ba;
+    border: 1px solid rgba(228,216,186,.4);
+  }
+  .btn.ghost:hover{ border-color: #e4d8ba; }
+
+  /* ---------- Layout ---------- */
+  .layout{
+    display:flex;
+    max-width: 1180px;
+    margin: 0 auto;
+    align-items: flex-start;
+  }
+
+  .mobile-toc-toggle{
+    display:none;
+  }
+
+  .sidebar{
+    width: var(--sidebar-w);
+    flex-shrink:0;
+    position: sticky;
+    top:0;
+    align-self: flex-start;
+    max-height: 100vh;
+    overflow-y:auto;
+    padding: 2.2rem 1.2rem 3rem 1.5rem;
+    border-right: 1px solid var(--paper-line);
+  }
+  .sidebar-title{
+    font-family: var(--font-mono);
+    font-size: .72rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text-soft);
+    margin: 1.4rem 0 .5rem;
+  }
+  .sidebar-title:first-child{ margin-top: 0; }
+  .sidebar nav ul{
+    list-style:none; margin:0; padding:0;
+  }
+  .sidebar nav li a{
+    display:block;
+    padding: .32rem .5rem;
+    margin: .05rem 0;
+    border-radius: 3px;
+    color: var(--text-main);
+    border-bottom: none;
+    font-size: .92rem;
+    border-left: 2px solid transparent;
+  }
+  .sidebar nav li a:hover{
+    background: var(--teal-soft);
+  }
+  .sidebar nav li a.active{
+    border-left-color: var(--amber);
+    background: var(--teal-soft);
+    color: var(--amber-dark);
+    font-weight: 600;
+  }
+  .sidebar nav .sub a{
+    font-size: .85rem;
+    color: var(--text-soft);
+    padding-left: 1.1rem;
+  }
+
+  main.content{
+    flex: 1;
+    min-width:0;
+    padding: 3rem 1.6rem 6rem;
+    max-width: calc(var(--maxw) + 3.2rem);
+    margin: 0 auto;
+  }
+
+  section{ margin-bottom: 3.6rem; scroll-margin-top: 1.5rem; }
+  section > h2{
+    font-size: 1.9rem;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: .5rem;
+    margin-bottom: 1.3rem;
+  }
+  section > p.section-intro{
+    color: var(--text-soft);
+    font-style: italic;
+    margin-top: -.4rem;
+  }
+
+  article.werk, article.konzept{
+    background: var(--paper-card);
+    border: 1px solid var(--paper-line);
+    border-radius: 6px;
+    padding: 1.6rem 1.7rem;
+    margin: 1.6rem 0;
+    scroll-margin-top: 1.5rem;
+  }
+  article.werk h3, article.konzept h3{
+    margin-top:0;
+    font-size: 1.32rem;
+  }
+  .tag-row{
+    display:flex; gap:.5rem; flex-wrap:wrap;
+    margin-bottom: .9rem;
+  }
+  .tag{
+    font-family: var(--font-mono);
+    font-size: .72rem;
+    padding: .2rem .55rem;
+    border-radius: 3px;
+    letter-spacing: .03em;
+  }
+  .tag.jahr{ background: var(--ink); color: #ecdfc2; }
+  .tag.typ{ background: var(--teal-soft); color: var(--teal); border:1px solid var(--teal); }
+
+  /* "API-Signature" Boxen für Kernkonzepte */
+  .signature{
+    font-family: var(--font-mono);
+    background: var(--code-bg);
+    border: 1px solid var(--paper-line);
+    border-left: 4px solid var(--amber);
+    border-radius: 4px;
+    padding: .75rem 1rem;
+    font-size: .92rem;
+    color: var(--ink);
+    margin: 0 0 1rem;
+    overflow-x:auto;
+  }
+  .signature .fn{ color: var(--amber-dark); font-weight: 700; }
+  .signature .arg{ color: var(--teal); }
+
+  dl.meta-list{
+    display:grid;
+    grid-template-columns: max-content 1fr;
+    gap: .35rem 1rem;
+    font-size: .88rem;
+    margin: 1rem 0 1.3rem;
+    padding: .8rem 1rem;
+    background: var(--teal-soft);
+    border-radius: 4px;
+  }
+  dl.meta-list dt{
+    font-family: var(--font-mono);
+    color: var(--teal);
+    font-weight:600;
+  }
+  dl.meta-list dd{ margin:0; color: var(--text-main); }
+
+  blockquote{
+    margin: 1.1rem 0;
+    padding: .3rem 0 .3rem 1.1rem;
+    border-left: 3px solid var(--amber);
+    font-style: italic;
+    color: var(--text-soft);
+  }
+
+  .note{
+    background: #efe2c4;
+    border: 1px dashed var(--amber);
+    border-radius: 4px;
+    padding: .8rem 1rem;
+    font-size: .92rem;
+    margin: 1.2rem 0;
+  }
+  .note strong{ color: var(--amber-dark); }
+
+  table.glossar{
+    width:100%;
+    border-collapse: collapse;
+    font-size: .92rem;
+    margin: 1rem 0 2rem;
+  }
+  table.glossar caption{
+    text-align:left;
+    font-family: var(--font-mono);
+    font-size: .78rem;
+    color: var(--text-soft);
+    margin-bottom: .5rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+  }
+  table.glossar th, table.glossar td{
+    text-align:left;
+    padding: .55rem .7rem;
+    border-bottom: 1px solid var(--paper-line);
+    vertical-align: top;
+  }
+  table.glossar th{
+    font-family: var(--font-mono);
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--teal);
+    border-bottom: 2px solid var(--ink);
+  }
+  table.glossar td.term{
+    font-family: var(--font-mono);
+    color: var(--amber-dark);
+    white-space: nowrap;
+    font-weight:600;
+  }
+
+  .quickstart-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+    gap: 1rem;
+    margin: 1.4rem 0;
+  }
+  .quickstart-grid .card{
+    background: var(--paper-card);
+    border: 1px solid var(--paper-line);
+    border-radius: 6px;
+    padding: 1rem 1.1rem;
+  }
+  .quickstart-grid .card h4{
+    margin: 0 0 .4rem;
+    font-size: 1rem;
+    color: var(--amber-dark);
+  }
+  .quickstart-grid .card p{ margin:0; font-size:.92rem; color: var(--text-soft); }
+
+  .timeline{
+    border-left: 2px solid var(--paper-line);
+    margin: 1.5rem 0 1.5rem .4rem;
+    padding-left: 1.4rem;
+  }
+  .timeline .ev{ position:relative; margin-bottom: 1rem; }
+  .timeline .ev::before{
+    content:"";
+    position:absolute; left:-1.62rem; top:.35rem;
+    width:9px; height:9px; border-radius:50%;
+    background: var(--amber);
+    border: 2px solid var(--paper);
+  }
+  .timeline .ev time{
+    font-family: var(--font-mono); font-size:.8rem; color: var(--teal); display:block;
+  }
+
+  footer{
+    border-top: 1px solid var(--paper-line);
+    padding: 2.4rem 1.6rem 3.5rem;
+    text-align:center;
+    color: var(--text-soft);
+    font-size: .85rem;
+  }
+
+  /* Mobile */
+  @media (max-width: 880px){
+    .layout{ flex-direction: column; }
+    .sidebar{
+      width:100%;
+      position: static;
+      max-height: none;
+      border-right:none;
+      border-bottom: 1px solid var(--paper-line);
+      padding: 1rem 1.2rem;
+      display:none;
+    }
+    .sidebar.open{ display:block; }
+    .mobile-toc-toggle{
+      display:block;
+      width:100%;
+      text-align:left;
+      background: var(--ink);
+      color: #ecdfc2;
+      border:none;
+      font-family: var(--font-mono);
+      font-size: .85rem;
+      padding: .9rem 1.2rem;
+      cursor:pointer;
+    }
+    main.content{ padding: 2rem 1.2rem 4rem; }
+    dl.meta-list{ grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <a class="backlink" href="../index.html">&larr; Alle Beiträge</a>
+    <p class="eyebrow">Begleitdokumentation · Philosophie des 19. Jahrhunderts</p>
+    <h1>Arthur <em>Schopenhauer</em></h1>
+    <p class="lede">Die Welt als Wille und Vorstellung, in handlichen Modulen. Ein Schnelleinstieg in das Gesamtwerk, gefolgt von einer Referenz seiner Hauptwerke und Kernkonzepte — für alle, die seine Philosophie nicht nur zitieren, sondern verstehen wollen.</p>
+    <div class="hero-meta">
+      <span>geb. 1788 · Danzig</span>
+      <span>gest. 1860 · Frankfurt am Main</span>
+      <span>Hauptwerk: 1818/19</span>
+      <span>Tradition: Post-Kantianischer Idealismus, Voluntarismus</span>
+    </div>
+    <div class="hero-cta">
+      <a class="btn" href="#quickstart">Schnelleinstieg →</a>
+      <a class="btn ghost" href="#werke">Zu den Hauptwerken</a>
+    </div>
+  </div>
+</header>
+
+<button class="mobile-toc-toggle" id="tocToggle" aria-expanded="false" aria-controls="sidebar">☰ Inhaltsverzeichnis</button>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <p class="sidebar-title">Einstieg</p>
+    <nav>
+      <ul>
+        <li><a href="#quickstart">Schnelleinstieg</a></li>
+        <li><a href="#leben">Leben in Kürze</a></li>
+      </ul>
+    </nav>
+    <p class="sidebar-title">Hauptwerke</p>
+    <nav>
+      <ul>
+        <li><a href="#werk-wurzel">Die vierfache Wurzel (1813)</a></li>
+        <li><a href="#werk-welt">Welt als Wille u. Vorstellung (1818)</a></li>
+        <li><a href="#werk-natur">Wille in der Natur (1836)</a></li>
+        <li><a href="#werk-ethik">Grundprobleme der Ethik (1841)</a></li>
+        <li><a href="#werk-parerga">Parerga und Paralipomena (1851)</a></li>
+      </ul>
+    </nav>
+    <p class="sidebar-title">Kernkonzepte</p>
+    <nav>
+      <ul>
+        <li><a href="#konzept-wille">Der Wille</a></li>
+        <li><a href="#konzept-vorstellung">Die Vorstellung</a></li>
+        <li><a href="#konzept-charakter">Charakter</a></li>
+        <li><a href="#konzept-leiden">Leiden &amp; Pessimismus</a></li>
+        <li><a href="#konzept-mitleid">Mitleidsethik</a></li>
+        <li><a href="#konzept-aesthetik">Ästhetik &amp; Genie</a></li>
+        <li><a href="#konzept-verneinung">Verneinung des Willens</a></li>
+        <li><a href="#konzept-einfluss">Wirkungsgeschichte</a></li>
+      </ul>
+    </nav>
+    <p class="sidebar-title">Referenz</p>
+    <nav>
+      <ul>
+        <li><a href="#glossar">Glossar</a></li>
+        <li><a href="#weiterlesen">Weiterlesen</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="content">
+
+    <section id="quickstart">
+      <h2>Schnelleinstieg</h2>
+      <p class="section-intro">Die Kernthese in fünf Minuten, bevor es in die Tiefe geht.</p>
+      <p>Schopenhauers System lässt sich auf einen einzigen Gedanken zuspitzen: Alles, was uns erscheint — Dinge, Körper, andere Menschen, der Lauf der Natur — ist zunächst nur <strong>Vorstellung</strong>, also Erscheinung für ein erkennendes Subjekt. Hinter dieser Erscheinung aber steckt ein einziges, blindes, ziel- und vernunftloses Drängen, das Schopenhauer den <strong>Willen</strong> nennt. Diesen Willen kennen wir nicht nur von außen wie jedes andere Naturding, sondern unmittelbar von innen — an unserem eigenen Leib, den wir sowohl als Objekt unter Objekten wahrnehmen als auch als unser eigenes Wollen erleben.</p>
+      <p>Weil der Wille ziellos und nie endgültig befriedigt ist, pendelt das Leben zwangsläufig zwischen Mangel und Leere: Ist ein Wunsch erfüllt, folgt nicht dauerhaftes Glück, sondern Langeweile, bis ein neuer Mangel sich meldet. Daraus folgt Schopenhauers berüchtigter <strong>Pessimismus</strong>: Leiden ist nicht ein Betriebsunfall des Lebens, sondern sein Normalzustand. Drei Auswege beschreibt er, jeder nur graduell und keiner endgültig: die <strong>ästhetische Kontemplation</strong> in der Kunst, das <strong>Mitleid</strong> als Grundlage aller echten Moral, und als radikalste Stufe die <strong>Verneinung des Willens</strong> in asketischer Gelassenheit.</p>
+
+      <div class="quickstart-grid">
+        <div class="card">
+          <h4>Voraussetzung</h4>
+          <p>Kants Unterscheidung von Erscheinung und Ding an sich. Schopenhauer übernimmt sie — und behauptet, das Ding an sich doch erkennen zu können: als Wille.</p>
+        </div>
+        <div class="card">
+          <h4>Methode</h4>
+          <p>Ein einziger Grundgedanke, durchdekliniert durch Erkenntnistheorie, Naturphilosophie, Ästhetik und Ethik — die vier Bücher des Hauptwerks.</p>
+        </div>
+        <div class="card">
+          <h4>Ton</h4>
+          <p>Klar, oft aphoristisch, polemisch gegen die akademische Philosophie seiner Zeit, besonders gegen Hegel.</p>
+        </div>
+        <div class="card">
+          <h4>Wirkung</h4>
+          <p>Nietzsche, Wagner, Freud, Wittgenstein, Thomas Mann, Borges — kaum ein Denker des Pessimismus blieb von ihm unberührt.</p>
+        </div>
+      </div>
+
+      <div class="note"><strong>Leseweg:</strong> Wer wenig Zeit hat, liest <a href="#werk-welt">Die Welt als Wille und Vorstellung</a> und die Abschnitte <a href="#konzept-wille">Der Wille</a> und <a href="#konzept-leiden">Leiden &amp; Pessimismus</a>. Wer in die Tiefe will, folgt der Reihenfolge der Hauptwerke unten — sie ist zugleich die Reihenfolge, in der die Begriffe aufeinander aufbauen.</div>
+    </section>
+
+    <section id="leben">
+      <h2>Leben in Kürze</h2>
+      <div class="timeline">
+        <div class="ev">
+          <time>1788</time>
+          Geboren in Danzig als Sohn eines Kaufmanns; die Mutter Johanna Schopenhauer wird später eine erfolgreiche Schriftstellerin und Salonnière in Weimar.
+        </div>
+        <div class="ev">
+          <time>1809–1813</time>
+          Studium in Göttingen und Berlin (Philosophie, Naturwissenschaften); Promotion in Jena mit der Schrift <em>Über die vierfache Wurzel des Satzes vom zureichenden Grunde</em>.
+        </div>
+        <div class="ev">
+          <time>1818/19</time>
+          Vollendung von <em>Die Welt als Wille und Vorstellung</em> in Dresden — zunächst weitgehend ignoriert.
+        </div>
+        <div class="ev">
+          <time>1820</time>
+          Gescheiterter Versuch als Privatdozent in Berlin, zeitgleich mit dem damals übermächtigen Hegel; Schopenhauers Vorlesungen bleiben fast unbesucht.
+        </div>
+        <div class="ev">
+          <time>1833–1860</time>
+          Zurückgezogenes Leben in Frankfurt am Main, regelmäßige Spaziergänge mit seinen Pudeln, intensive Lektüre der Upanishaden und buddhistischer Quellen.
+        </div>
+        <div class="ev">
+          <time>1851</time>
+          <em>Parerga und Paralipomena</em> erscheint und bringt ihm — erst im hohen Alter — den langersehnten öffentlichen Erfolg.
+        </div>
+        <div class="ev">
+          <time>1860</time>
+          Tod in Frankfurt am Main.
+        </div>
+      </div>
+      <p>Schopenhauer verstand sich zeitlebens als Gegenspieler der damals dominierenden deutschen Universitätsphilosophie, vor allem Hegels, dessen Systemdenken er für unverständliches Scheinwissen hielt. Sein eigener Stil — klar, bildhaft, oft bitter-ironisch — war eine bewusste Gegenbewegung dazu.</p>
+    </section>
+
+    <section id="werke">
+      <h2>Hauptwerke</h2>
+      <p class="section-intro">Die fünf zentralen Module seines Denkens, in der Reihenfolge ihres Erscheinens.</p>
+
+      <article class="werk" id="werk-wurzel">
+        <div class="tag-row"><span class="tag jahr">1813</span><span class="tag typ">Dissertation · Erkenntnistheorie</span></div>
+        <h3>Über die vierfache Wurzel des Satzes vom zureichenden Grunde</h3>
+        <dl class="meta-list">
+          <dt>Funktion</dt><dd>Liefert das erkenntnistheoretische Fundament, auf dem das Hauptwerk aufbaut.</dd>
+          <dt>Kernthese</dt><dd>Der Satz „alles hat einen Grund“ gilt nicht einheitlich, sondern in vier verschiedenen Bedeutungen.</dd>
+        </dl>
+        <p>Diese Doktorarbeit unterscheidet vier Klassen von Objekten für ein erkennendes Subjekt, und mit ihnen vier Spielarten des Satzes vom zureichenden Grunde:</p>
+        <ul>
+          <li><strong>Anschauliche, empirische Vorstellungen</strong> — hier gilt das Gesetz der Kausalität: jeder Zustand eines realen Dinges hat einen vorausgehenden Zustand als Ursache.</li>
+          <li><strong>Abstrakte Vorstellungen (Begriffe, Urteile)</strong> — hier gilt der logische Grund des Erkennens: ein Urteil ist wahr, weil es aus anderen Urteilen oder aus Anschauung folgt.</li>
+          <li><strong>Die reine Form von Raum und Zeit</strong> — hier gilt der Grund des Seins: die Lage eines Teils im Raum oder Zeitpunkts in der Zeit bestimmt sich aus anderen Teilen derselben Form, wie in der Geometrie.</li>
+          <li><strong>Das Subjekt des Wollens, also der eigene Wille</strong> — hier gilt das Gesetz der Motivation: Handlungen folgen aus Motiven, so wie physische Wirkungen aus Ursachen, nur von innen erlebt statt von außen beobachtet.</li>
+        </ul>
+        <p>Diese vierte Klasse ist der entscheidende Hinweis: Im eigenen Wollen hat das Subjekt einen Zugang zu sich selbst, der nicht bloß äußere Beobachtung ist. Genau diesen Zugang wird Schopenhauer fünf Jahre später zur Grundlage seiner gesamten Metaphysik machen.</p>
+      </article>
+
+      <article class="werk" id="werk-welt">
+        <div class="tag-row"><span class="tag jahr">1818/19</span><span class="tag typ">Hauptwerk · Metaphysik, Ästhetik, Ethik</span></div>
+        <h3>Die Welt als Wille und Vorstellung</h3>
+        <dl class="meta-list">
+          <dt>Funktion</dt><dd>Das zentrale Modul — alle übrigen Werke sind Ergänzung, Vertiefung oder Anwendung.</dd>
+          <dt>Eröffnungssatz</dt><dd>„Die Welt ist meine Vorstellung.“</dd>
+          <dt>Aufbau</dt><dd>Vier Bücher, dazu 1844 ein zweiter Band mit ergänzenden Kapiteln zu jedem Buch.</dd>
+        </dl>
+        <p>Das Werk ist in vier Bücher gegliedert, die denselben Grundgedanken aus vier Perspektiven entfalten:</p>
+        <p><strong>Erstes Buch — Die Welt als Vorstellung (Erkenntnistheorie).</strong> Anschließend an Kant zeigt Schopenhauer, dass Raum, Zeit und Kausalität nicht Eigenschaften der Dinge an sich sind, sondern Formen, mit denen das erkennende Subjekt die Welt überhaupt erst zu einer geordneten Erscheinung macht. Was wir „die Welt“ nennen, ist insofern stets Welt-für-ein-Subjekt: Vorstellung.</p>
+        <p><strong>Zweites Buch — Die Welt als Wille (Metaphysik).</strong> Da der eigene Leib das einzige Objekt ist, das wir zugleich von außen als Vorstellung und von innen als Wollen kennen, gewinnt Schopenhauer hier den Schlüssel zum Ding an sich: Was sich im eigenen Leib als Wille zeigt, ist dasselbe Prinzip, das sich in jeder anderen Erscheinung der Natur verbirgt — in der Schwerkraft so gut wie im Instinkt des Tieres. Dieser Wille objektiviert sich stufenweise: zunächst in den allgemeinen Naturkräften und Arten (von Schopenhauer in Anlehnung an Platon „Ideen“ genannt), dann erst in der Vielzahl der einzelnen, in Raum und Zeit verstreuten Erscheinungen.</p>
+        <p><strong>Drittes Buch — Die Welt als Wille, zweite Betrachtung (Ästhetik).</strong> Im ästhetischen Genuss löst sich das Subjekt vorübergehend aus dem ständigen Dienst am eigenen Wollen: Es wird zum „reinen, willenlosen Subjekt der Erkenntnis“, das nicht mehr das einzelne Ding in seinem Nutzen, sondern die zeitlose Idee dahinter erfasst. Darin liegt für Schopenhauer eine zeitweilige Erlösung vom Leiden.</p>
+        <p><strong>Viertes Buch — Die Welt als Wille, dritte Betrachtung (Ethik).</strong> Konsequenz der Metaphysik ist, dass Bejahung des Willens zum Leben in Leiden führt; Erkenntnis dieses Zusammenhangs kann zur Verneinung des Willens führen — zu Mitleid, Resignation, Askese. Das Buch schließt mit einem vorsichtigen Ausblick auf jenen Zustand, der, vom Standpunkt des noch wollenden Bewusstseins aus betrachtet, als „Nichts“ erscheinen muss, in Wahrheit aber die Aufhebung der leidvollen Erscheinungswelt bedeutet.</p>
+        <div class="note"><strong>Hinweis zur Werkgeschichte:</strong> Die Erstauflage von 1818/19 (mit Erscheinungsjahr 1819 gedruckt) fand kaum Leser. Erst die zweite Auflage von 1844, ergänzt um einen ganzen zweiten Band mit Zusatzkapiteln, und vor allem der späte Erfolg der <em>Parerga</em> verschafften dem Werk Aufmerksamkeit.</div>
+      </article>
+
+      <article class="werk" id="werk-natur">
+        <div class="tag-row"><span class="tag jahr">1836</span><span class="tag typ">Naturphilosophie</span></div>
+        <h3>Über den Willen in der Natur</h3>
+        <dl class="meta-list">
+          <dt>Funktion</dt><dd>Sucht empirische Bestätigung der Willensmetaphysik in den Naturwissenschaften seiner Zeit.</dd>
+        </dl>
+        <p>In diesem schmaleren Werk durchforstet Schopenhauer Physiologie, Pflanzenphysiologie, Astronomie, vergleichende Anatomie, animalischen Magnetismus und weitere zeitgenössische Disziplinen nach Belegen dafür, dass auch unbewusste Naturvorgänge sich am besten als Ausdruck eines zugrundeliegenden, zwecklos drängenden Willens verstehen lassen — nicht nur das bewusste Wollen des Menschen, sondern ebenso das Wachsen der Pflanze zum Licht oder die Anziehungskraft der Materie. Es ist sein Versuch, die Metaphysik des Hauptwerks gegen den Vorwurf bloßer Spekulation zu verteidigen, indem er sie mit dem damaligen Stand der Naturwissenschaft abgleicht.</p>
+      </article>
+
+      <article class="werk" id="werk-ethik">
+        <div class="tag-row"><span class="tag jahr">1841</span><span class="tag typ">Zwei Preisschriften · Ethik</span></div>
+        <h3>Die beiden Grundprobleme der Ethik</h3>
+        <dl class="meta-list">
+          <dt>Teil I</dt><dd>„Über die Freiheit des menschlichen Willens“ (1839, von der Königlich Norwegischen Gesellschaft der Wissenschaften preisgekrönt)</dd>
+          <dt>Teil II</dt><dd>„Über das Fundament der Moral“ (1840, von der Königlich Dänischen Gesellschaft trotz einziger Einsendung nicht preisgekrönt — Schopenhauers Kritik an Kant galt als zu schroff)</dd>
+        </dl>
+        <p><strong>Über die Freiheit des Willens</strong> argumentiert, dass der empirische, im Alltag handelnde Wille streng determiniert ist: Jede Handlung folgt notwendig aus dem Zusammentreffen von Motiv und individuellem Charakter, ebenso notwendig wie eine physikalische Wirkung aus ihrer Ursache. Freiheit im Sinn eines grundlosen „auch-anders-Könnens“ (liberum arbitrium) gibt es für den empirischen Willen nicht. Echte Freiheit, wenn überhaupt, liegt allein im intelligiblen, dem Erscheinen vorausliegenden Charakter — also letztlich im Ding an sich, nicht in der einzelnen Handlung.</p>
+        <p><strong>Über das Fundament der Moral</strong> ist eine direkte Auseinandersetzung mit Kants Pflichtethik. Schopenhauer hält den kategorischen Imperativ für eine verkappte, nur sprachlich umformulierte Forderung nach Belohnung und Strafe und sucht ein Fundament, das ohne Vernunftgebot auskommt. Er unterscheidet drei letzte Triebfedern menschlichen Handelns — Egoismus, Bosheit und Mitleid — und erklärt allein das Mitleid für moralisch wertvoll, weil es den Einzelnen über die Schranke seiner eigenen Person hinausführt.</p>
+      </article>
+
+      <article class="werk" id="werk-parerga">
+        <div class="tag-row"><span class="tag jahr">1851</span><span class="tag typ">Essays &amp; Aphorismen</span></div>
+        <h3>Parerga und Paralipomena</h3>
+        <dl class="meta-list">
+          <dt>Funktion</dt><dd>Populäre, eigenständig lesbare Essays — brachte den späten öffentlichen Erfolg.</dd>
+          <dt>Bekanntester Teil</dt><dd>„Aphorismen zur Lebensweisheit“</dd>
+        </dl>
+        <p>Die beiden Bände versammeln Essays zu Einzelthemen, die das System des Hauptwerks voraussetzen, aber nicht erneut entfalten. Am einflussreichsten wurden die <em>Aphorismen zur Lebensweisheit</em>: praktische Klugheitslehren für ein möglichst schmerzfreies Leben — etwa zur Bedeutung von Gesundheit, innerer Unabhängigkeit und einem maßvollen Umgang mit den Erwartungen anderer. Bemerkenswert ist der Bruch, den diese eudämonologischen Ratschläge gegenüber der Metaphysik des Hauptwerks markieren: Dort ist Leiden Wesensmerkmal des Lebens überhaupt, hier gibt Schopenhauer pragmatische Hinweise, wie sich dieses Leiden zumindest verringern lässt — ausdrücklich, wie er selbst betont, auf einem niedrigeren, rein empirischen Standpunkt.</p>
+        <p>Daneben enthalten die Bände Essays <em>Über Lärm</em>, <em>Über Lesen und Bücher</em>, <em>Über Religion</em> und die polemische Schrift <em>Über die Universitätsphilosophie</em> mit scharfer Spottkritik an Hegel und Fichte. Ein Essay <em>Über die Weiber</em> gehört ebenfalls dazu; er gilt heute zu Recht als das am stärksten zeitgebundene und durch pauschale Abwertung von Frauen belastete Stück seines Werks und wird in der Forschung überwiegend als historisches Dokument seiner persönlichen Vorurteile gelesen, nicht als tragfähiger Teil seines philosophischen Systems.</p>
+      </article>
+    </section>
+
+    <section id="konzepte">
+      <h2>Kernkonzepte — Referenz</h2>
+      <p class="section-intro">Die tragenden Begriffe des Systems, einzeln aufgeschlüsselt mit Quelle und Konsequenz.</p>
+
+      <article class="konzept" id="konzept-wille">
+        <h3>Der Wille</h3>
+        <div class="signature"><span class="fn">Wille</span>.alsDingAnSich(<span class="arg">Leib</span>) → Ur-Prinzip aller Erscheinung</div>
+        <p>Der Wille ist für Schopenhauer das Ding an sich, das Kant für unerkennbar erklärt hatte. Zugang dazu hat das Subjekt nicht durch Beobachtung von außen, sondern unmittelbar an seinem eigenen Leib, den es zugleich als Objekt unter Objekten und als eigenes Wollen erfährt. Dieser Wille ist <em>ein</em> einziger, jenseits von Raum, Zeit und Kausalität — daher unteilbar, ohne Anfang und Ende, ohne Ziel und ohne „Warum“. Er objektiviert sich stufenweise: zuerst in den allgemeinen Naturkräften und Arten, die Schopenhauer in Anlehnung an Platon „Ideen“ nennt, dann in der unendlichen Vielzahl einzelner Erscheinungen, vom Fall des Steins bis zum Streben des Menschen.</p>
+        <dl class="meta-list"><dt>Quelle</dt><dd>Welt als Wille und Vorstellung, Buch II</dd><dt>Verwandt</dt><dd>Wille zum Leben, Objektivationsstufen, Ding an sich</dd></dl>
+      </article>
+
+      <article class="konzept" id="konzept-vorstellung">
+        <h3>Die Vorstellung</h3>
+        <div class="signature"><span class="fn">Vorstellung</span>.erzeugeWelt(<span class="arg">Subjekt</span>) → Erscheinung in Raum, Zeit, Kausalität</div>
+        <p>Was uns als Welt erscheint, ist stets schon Welt-für-ein-Subjekt: geformt durch Raum, Zeit und Kausalität, die Schopenhauer — radikalisierend an Kant anschließend — nicht als Eigenschaften der Dinge selbst, sondern als Formen unseres Erkenntnisapparates begreift. Raum und Zeit zusammen bilden das <em>principium individuationis</em>: das Prinzip, durch das der an sich einheitliche Wille in eine Vielheit getrennter Einzelwesen zerfällt. Begriffe und Urteile (die „abstrakten Vorstellungen“) sind nachträgliche Abstraktionen aus dieser anschaulichen Welt, nicht eine zweite, eigenständige Erkenntnisquelle.</p>
+        <dl class="meta-list"><dt>Quelle</dt><dd>Welt als Wille und Vorstellung, Buch I; Vierfache Wurzel</dd><dt>Verwandt</dt><dd>principium individuationis, Maya</dd></dl>
+      </article>
+
+      <article class="konzept" id="konzept-charakter">
+        <h3>Charakter</h3>
+        <div class="signature"><span class="fn">Charakter</span>.bestimmeHandlung(<span class="arg">Motiv</span>) → notwendige Handlung</div>
+        <p>Den von Kant übernommenen Unterschied von empirischem und intelligiblem Charakter deutet Schopenhauer so: Jeder Mensch handelt notwendig aus seinem angeborenen, unveränderlichen Charakter, sobald ein passendes Motiv eintritt — ebenso notwendig, wie eine Billardkugel auf einen Stoß reagiert. Erziehung und Einsicht können nicht den Charakter selbst ändern, wohl aber die Erkenntnis, die ihm vorgelegt wird, und damit, welche Motive überhaupt wirksam werden. Damit verbindet sich seine Position zur Willensfreiheit: frei ist, wenn überhaupt, nur der intelligible Charakter als Ding an sich — nicht die einzelne, stets determinierte Handlung.</p>
+        <dl class="meta-list"><dt>Quelle</dt><dd>Die beiden Grundprobleme der Ethik, Teil I</dd><dt>Verwandt</dt><dd>Determinismus, intelligibler Charakter</dd></dl>
+      </article>
+
+      <article class="konzept" id="konzept-leiden">
+        <h3>Leiden &amp; Pessimismus</h3>
+        <div class="signature"><span class="fn">Leben</span>.zustand() → Schmerz | Langeweile</div>
+        <p>Weil der Wille nie endgültig gestillt wird, kennt das Leben für Schopenhauer im Grunde nur zwei Zustände: Schmerz, solange ein Wunsch unbefriedigt ist, und Langeweile, sobald er es ist und kein neuer Mangel nachdrängt. Lust und Glück sind dabei stets nur negativ — die vorübergehende Aufhebung eines Mangels —, nie ein eigener, positiver Gewinn. Daraus folgt der berühmte metaphysische Pessimismus: Leiden ist nicht Unfall, sondern Wesen des Lebens selbst. Diese Diagnose unterscheidet sich deutlich von den späteren, eher pragmatischen Ratschlägen der <a href="#werk-parerga">Aphorismen zur Lebensweisheit</a>, die auf einem ausdrücklich niedrigeren, alltagspraktischen Standpunkt stehen.</p>
+        <dl class="meta-list"><dt>Quelle</dt><dd>Welt als Wille und Vorstellung, Buch IV</dd><dt>Verwandt</dt><dd>Wille zum Leben, Verneinung des Willens</dd></dl>
+      </article>
+
+      <article class="konzept" id="konzept-mitleid">
+        <h3>Mitleidsethik</h3>
+        <div class="signature"><span class="fn">Moral</span>.bewerten(<span class="arg">Triebfeder</span>) → Egoismus | Bosheit | <span class="arg">Mitleid</span></div>
+        <p>Gegen Kants Pflichtethik setzt Schopenhauer eine Ethik des Gefühls: Letzte Triebfedern jeder Handlung sind Egoismus (das eigene Wohl), Bosheit (das Leiden anderer) und Mitleid (das Leiden anderer als eigenes Leiden mitempfunden). Nur das Mitleid ist moralisch wertvoll, weil sich darin etwas Metaphysisches zeigt: ein Durchschauen des principium individuationis, also die — wenn auch nur gefühlte, nicht begrifflich erfasste — Einsicht, dass hinter der Vielheit der Individuen derselbe eine Wille steht. Wer mitleidet, behandelt insofern den anderen faktisch wie sich selbst.</p>
+        <dl class="meta-list"><dt>Quelle</dt><dd>Die beiden Grundprobleme der Ethik, Teil II</dd><dt>Verwandt</dt><dd>principium individuationis, Verneinung des Willens</dd></dl>
+      </article>
+
+      <article class="konzept" id="konzept-aesthetik">
+        <h3>Ästhetik &amp; Genie</h3>
+        <div class="signature"><span class="fn">Kontemplation</span>.betrachten(<span class="arg">Idee</span>) → willenloses Subjekt der Erkenntnis</div>
+        <p>In der ästhetischen Erfahrung verliert das Subjekt für einen Moment sein Interesse am einzelnen Ding als Mittel zum eigenen Zweck und erfasst stattdessen die zeitlose <em>Idee</em>, die sich in ihm ausdrückt — Schopenhauer baut hier auf den platonischen Ideenbegriff. Diese „reine, interesselose Anschauung“ befreit vorübergehend vom ständigen Dienst am Wollen. Die Künste ordnet Schopenhauer nach dem Rang der in ihnen dargestellten Objektivationsstufe — von Architektur (Schwere, Starrheit, niedrige Stufe) bis zur Tragödie (Darstellung des Leidens der Menschheit selbst). Eine Sonderstellung nimmt die Musik ein: Sie bildet, anders als die anderen Künste, nicht die Ideen, sondern den Willen selbst unmittelbar ab und gilt ihm deshalb als die höchste Kunst.</p>
+        <dl class="meta-list"><dt>Quelle</dt><dd>Welt als Wille und Vorstellung, Buch III</dd><dt>Verwandt</dt><dd>Objektivationsstufen, Genie</dd></dl>
+      </article>
+
+      <article class="konzept" id="konzept-verneinung">
+        <h3>Verneinung des Willens</h3>
+        <div class="signature"><span class="fn">Wille</span>.verneinen(<span class="arg">Erkenntnis</span>) → Askese, Gelassenheit</div>
+        <p>Die radikalste Antwort auf das Leiden ist nicht nur zeitweiliges ästhetisches Vergessen oder mitfühlendes Handeln, sondern die dauerhafte Abwendung vom Wollen selbst: Wer das principium individuationis durchschaut und das Leiden der ganzen Welt als eigenes erfasst hat, dem kann der Wille zum Leben selbst zuwider werden. Die Folge ist freiwillige Askese, Gleichmut gegenüber dem eigenen Schicksal, ein Erlöschen des Begehrens — Zustände, die Schopenhauer in auffälliger Nähe zur christlichen Mystik (etwa Meister Eckhart) und zu indischen Lehren (Vedanta, Buddhismus, Nirvana) beschreibt. Das Hauptwerk endet mit dem vorsichtigen Hinweis, dass dieser Zustand, vom Standpunkt des noch Wollenden aus betrachtet, als bloßes Nichts erscheinen muss — während er, einmal erreicht, gerade die Aufhebung der leidvollen Welt der Erscheinung bedeutet.</p>
+        <dl class="meta-list"><dt>Quelle</dt><dd>Welt als Wille und Vorstellung, Buch IV (Schluss)</dd><dt>Verwandt</dt><dd>Askese, Mystik, Nirvana-Anklänge</dd></dl>
+      </article>
+
+      <article class="konzept" id="konzept-einfluss">
+        <h3>Wirkungsgeschichte</h3>
+        <div class="signature"><span class="fn">Einfluss</span>.weitergeben() → Nietzsche, Wagner, Freud, Wittgenstein, ...</div>
+        <p><strong>Friedrich Nietzsche</strong> begann als begeisterter Leser Schopenhauers, wandte sich aber später entschieden gegen dessen Pessimismus und Verneinung des Willens — sein eigener „Wille zur Macht“ lässt sich auch als bejahende Gegenantwort auf Schopenhauers Diagnose lesen. <strong>Richard Wagner</strong> überarbeitete unter dem Eindruck der Lektüre Teile seines Denkens über Musik und ließ Schopenhauers Metaphysik des Willens in Werke wie <em>Tristan und Isolde</em> einfließen. <strong>Sigmund Freud</strong> erkannte später Parallelen zwischen Schopenhauers Begriff des Willens als unbewusster, alle bewusste Erkenntnis unterlaufender Triebkraft und seiner eigenen Theorie des Unbewussten. Der junge <strong>Ludwig Wittgenstein</strong> griff im <em>Tractatus</em> erkennbar auf Schopenhauers Satz „Die Welt ist meine Vorstellung“ zurück. Auch literarisch reicht der Einfluss weit, von Tolstoi über Thomas Mann bis zu Jorge Luis Borges und Samuel Beckett — und Schopenhauer gehört zu den wichtigsten Vermittlern einer ernsthaften Rezeption buddhistischer und vedantischer Gedanken im Westen des 19. Jahrhunderts.</p>
+      </article>
+    </section>
+
+    <section id="glossar">
+      <h2>Glossar</h2>
+      <p class="section-intro">Schnellreferenz der wichtigsten Begriffe.</p>
+      <table class="glossar">
+        <caption>Begriffe von A bis Z</caption>
+        <thead>
+          <tr><th>Begriff</th><th>Kurzdefinition</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="term">Ding an sich</td><td>Die Welt, wie sie unabhängig von ihrer Erscheinung für ein Subjekt ist; bei Schopenhauer identifiziert mit dem Willen.</td></tr>
+          <tr><td class="term">Charakter (empirisch)</td><td>Der in der Erscheinung sichtbare, durch Handlungen erkennbare Charakter eines Menschen.</td></tr>
+          <tr><td class="term">Charakter (intelligibel)</td><td>Der dem Erscheinen vorausliegende, zeitlose Charakter als Ding an sich.</td></tr>
+          <tr><td class="term">Maya</td><td>Aus der indischen Philosophie entlehnter Begriff für den täuschenden Schleier der Erscheinungswelt.</td></tr>
+          <tr><td class="term">Objektivation</td><td>Die stufenweise Erscheinung des Willens, von allgemeinen Naturkräften (Ideen) bis zu einzelnen Dingen.</td></tr>
+          <tr><td class="term">principium individuationis</td><td>Raum und Zeit als das Prinzip, durch das der eine Wille in eine Vielheit von Einzelwesen zerfällt.</td></tr>
+          <tr><td class="term">Vorstellung</td><td>Die Welt, sofern sie für ein erkennendes Subjekt erscheint — geformt durch Raum, Zeit, Kausalität.</td></tr>
+          <tr><td class="term">Wille</td><td>Das blinde, ziellose, alle Erscheinung durchdringende Ur-Prinzip; das Ding an sich.</td></tr>
+          <tr><td class="term">Wille zum Leben</td><td>Der unmittelbar wirksame Selbsterhaltungs- und Fortpflanzungstrieb in jedem Lebewesen.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="weiterlesen">
+      <h2>Weiterlesen</h2>
+      <p>Wer tiefer einsteigen will, findet die Primärtexte in zahlreichen kommentierten Ausgaben (etwa bei Suhrkamp/Haffmans, basierend auf der historisch-kritischen Ausgabe von Arthur Hübscher). Als Einstieg in Leben und Werk hat sich Rüdiger Safranskis Biografie <em>Schopenhauer und die wilden Jahre der Philosophie</em> als Standardwerk etabliert; im englischsprachigen Raum gilt Julian Youngs <em>Schopenhauer</em> als zugängliche philosophische Einführung. Wer die Wirkungsgeschichte vertiefen möchte, findet bei Nietzsches früher Schrift <em>Schopenhauer als Erzieher</em> einen guten Ausgangspunkt für den Vergleich beider Denker.</p>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  <p style="margin:0 0 1.2rem">Zusammengestellt als Lese- und Lernhilfe. Alle hier paraphrasierten Inhalte beziehen sich auf gemeinfreie Werke Arthur Schopenhauers (1788–1860).</p>
+  <p style="margin:0 0 .8rem"><a href="../index.html">&larr; Zurück zur Übersicht</a></p>
+  <nav class="foot-nav" style="display:flex;gap:1.2rem;justify-content:center;font-family:var(--font-mono);font-size:.8rem">
+    <a href="../impressum.html">Impressum</a>
+    <a href="../datenschutz.html">Datenschutz</a>
+  </nav>
+</footer>
+
+<script>
+(function(){
+  var toggle = document.getElementById('tocToggle');
+  var sidebar = document.getElementById('sidebar');
+  if(toggle && sidebar){
+    toggle.addEventListener('click', function(){
+      var isOpen = sidebar.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+    sidebar.addEventListener('click', function(e){
+      if(e.target.tagName === 'A' && window.innerWidth <= 880){
+        sidebar.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  var links = Array.prototype.slice.call(document.querySelectorAll('.sidebar nav a'));
+  var sections = links
+    .map(function(a){ return document.querySelector(a.getAttribute('href')); })
+    .filter(Boolean);
+
+  if('IntersectionObserver' in window && sections.length){
+    var byId = {};
+    links.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+
+    var observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        var link = byId[entry.target.id];
+        if(!link) return;
+        if(entry.isIntersecting){
+          links.forEach(function(l){ l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+
+    sections.forEach(function(s){ observer.observe(s); });
+  }
+})();
+</script>
+
+</body>
+</html>
