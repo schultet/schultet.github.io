@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meine tmux.conf &middot; Append-Only</title>
+<meta name="description" content="Meine tmux-Konfiguration zum Kopieren, Zeile für Zeile kommentiert – Prefix auf Ctrl-a, Vim-Navigation über Pane-Grenzen hinweg, TPM-Plugins.">
+<!-- Schriften werden selbst gehostet; @font-face steht in assets/blog.css -->
+<link rel="stylesheet" href="../assets/blog.css">
+<style>
+  /* Ergaenzungen nur fuer diese Seite: Konfig-Block, Cheatsheet, Tasten */
+
+  /* --- Datei-Block mit Kopf-Leiste --- */
+  .conf{margin:0 0 26px}
+  .conf-head{
+    display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+    background:#1d1610;border:1px solid #3a2c21;border-bottom:none;
+    border-radius:12px 12px 0 0;padding:9px 14px;
+    font-family:"JetBrains Mono",monospace;font-size:12px;color:#c9b79f;
+  }
+  .conf-head .name{letter-spacing:.04em}
+  .conf-head .sp{margin-left:auto}
+  .conf-btn{
+    font-family:inherit;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;
+    background:#2f241b;color:#e8d9c4;border:1px solid #574334;border-radius:6px;
+    padding:4px 10px;cursor:pointer;text-decoration:none;display:inline-block;
+  }
+  .conf-btn:hover{background:#3d2f23;color:#fff3e2;border-color:#7a5e49}
+  .conf-btn.ok{background:var(--teal);border-color:var(--teal);color:#eef6f4}
+  .conf .post-pre{
+    background:#2a2018;color:#f0e6d6;border:1px solid #3a2c21;
+    border-radius:0 0 12px 12px;padding:18px 20px;overflow:auto;
+    font-family:"JetBrains Mono",monospace;font-size:13px;line-height:1.6;
+    margin:0;box-shadow:var(--shadow);max-height:none;
+  }
+  .conf .post-pre code{background:none;border:none;padding:0;color:inherit;font-size:inherit}
+  .conf .post-pre .c{color:#9a836b}      /* Kommentar */
+  .conf .post-pre .k{color:#e2a04a}      /* tmux-Kommando */
+
+  /* --- Cheatsheet-Tabelle --- */
+  .sheet{width:100%;border-collapse:collapse;margin:0 0 22px;font-size:16px}
+  .sheet caption{
+    text-align:left;font-family:"JetBrains Mono",monospace;font-size:11px;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);
+    padding-bottom:8px;
+  }
+  .sheet th,.sheet td{text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+  .sheet th{
+    font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--teal);border-bottom:2px solid var(--ink);font-weight:500;
+  }
+  .sheet td:first-child{white-space:nowrap;width:1%;padding-right:22px}
+  .sheet td.was{color:var(--ink-soft)}
+
+  kbd{
+    font-family:"JetBrains Mono",monospace;font-size:.8em;
+    background:var(--card);border:1px solid var(--rule);border-bottom-width:2px;
+    border-radius:5px;padding:2px 6px;color:var(--ink);white-space:nowrap;
+  }
+
+  /* --- Merkkasten --- */
+  .box{
+    background:var(--card);border:1px solid var(--rule-soft);border-left:4px solid var(--gold);
+    border-radius:10px;padding:14px 18px;margin:0 0 20px;font-size:16.5px;color:var(--ink-soft);
+  }
+  .box .lab{
+    display:block;font-family:"JetBrains Mono",monospace;font-size:10.5px;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--rust);margin-bottom:6px;
+  }
+  .box p{margin:0 0 10px}
+  .box p:last-child{margin-bottom:0}
+  .box.warn{border-left-color:var(--rust)}
+
+  @media (max-width:560px){
+    .conf .post-pre{font-size:11.5px}
+    .sheet{font-size:15px}
+    .sheet td:first-child{padding-right:12px}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="backlink" href="../index.html">&larr; Alle Beitr&auml;ge</a>
+
+    <article class="post">
+      <div class="meta">29. Juli 2026</div>
+      <h1>Meine tmux.conf</h1>
+      <div class="post-tags">
+        <span class="t">Dotfiles</span>
+        <span class="t">Terminal</span>
+        <span class="t">Referenz</span>
+      </div>
+
+      <div class="post-body">
+        <p>Diese Konfiguration wandert seit Jahren von Rechner zu Rechner, und jedes Mal suche ich sie an einem anderen Ort: in einem alten Backup, in einer Chat-Historie, in einem Gist, den ich nicht mehr finde. Ein eigenes Dotfiles-Repo daf&uuml;r anzulegen w&auml;re Overkill &ndash; also liegt sie ab jetzt hier. Vollst&auml;ndig, zum Kopieren, und diesmal mit einer Erkl&auml;rung zu jedem Block, damit ich in zwei Jahren noch wei&szlig;, warum eine Zeile drinsteht.</p>
+
+        <div class="box">
+          <span class="lab">In drei Schritten einsatzbereit</span>
+          <p>Konfiguration nach <code>~/.tmux.conf</code> legen, TPM klonen, Plugins installieren:</p>
+          <pre><code>curl -o ~/.tmux.conf https://schultet.github.io/assets/tmux.conf
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+tmux new -s dev        # Session starten
+# darin: Ctrl-a  gefolgt von  I   →  Plugins installieren</code></pre>
+          <p>L&auml;uft schon eine tmux-Session, gen&uuml;gt danach <kbd>Ctrl-a</kbd> <kbd>r</kbd> zum Neuladen.</p>
+        </div>
+
+        <h2>Die vollst&auml;ndige Konfiguration</h2>
+
+        <div class="conf">
+          <div class="conf-head">
+            <span class="name">~/.tmux.conf</span>
+            <span class="sp"></span>
+            <a class="conf-btn" href="../assets/tmux.conf" download="tmux.conf">Download</a>
+            <button class="conf-btn" id="copyBtn" type="button" data-label="Kopieren">Kopieren</button>
+          </div>
+          <pre class="post-pre" id="confCode"><code><span class="c"># ~/.tmux.conf</span>
+
+<span class="c"># ============================================</span>
+<span class="c"># ESSENTIAL SETTINGS</span>
+<span class="c"># ============================================</span>
+
+<span class="c"># Fix Vim ESC delay</span>
+<span class="k">set</span> -sg escape-time 0
+
+<span class="c"># Increase scrollback buffer</span>
+<span class="k">set</span> -g history-limit 50000
+
+<span class="c"># Start windows and panes at 1, not 0</span>
+<span class="k">set</span> -g base-index 1
+<span class="k">setw</span> -g pane-base-index 1
+
+<span class="c"># Enable mouse support</span>
+<span class="k">set</span> -g mouse on
+
+<span class="c"># Enable focus events for vim autoread</span>
+<span class="k">set</span> -g focus-events on
+
+<span class="c"># Set terminal with proper colors</span>
+<span class="k">set</span> -g default-terminal &quot;tmux-256color&quot;
+<span class="k">set</span> -as terminal-features &quot;,xterm-256color:RGB&quot;
+
+<span class="c"># Aggressive resize for multi-client</span>
+<span class="k">setw</span> -g aggressive-resize on
+
+<span class="c"># ============================================</span>
+<span class="c"># KEY BINDINGS</span>
+<span class="c"># ============================================</span>
+
+<span class="c"># Change prefix to Ctrl+a (more ergonomic)</span>
+<span class="k">unbind</span> C-b
+<span class="k">set</span> -g prefix C-a
+<span class="k">bind</span> C-a send-prefix
+
+<span class="c"># Reload config</span>
+<span class="k">bind</span> r source-file ~/.tmux.conf \; display &quot;Config reloaded!&quot;
+
+<span class="c"># Better pane splitting (and keep current path)</span>
+<span class="k">bind</span> | split-window -h -c &quot;#{pane_current_path}&quot;
+<span class="k">bind</span> - split-window -v -c &quot;#{pane_current_path}&quot;
+<span class="k">bind</span> c new-window -c &quot;#{pane_current_path}&quot;
+
+<span class="c"># Vim-style pane navigation</span>
+<span class="k">bind</span> h select-pane -L
+<span class="k">bind</span> j select-pane -D
+<span class="k">bind</span> k select-pane -U
+<span class="k">bind</span> l select-pane -R
+
+<span class="c"># Vim-style pane resizing</span>
+<span class="k">bind</span> -r H resize-pane -L 5
+<span class="k">bind</span> -r J resize-pane -D 5
+<span class="k">bind</span> -r K resize-pane -U 5
+<span class="k">bind</span> -r L resize-pane -R 5
+
+<span class="c"># ============================================</span>
+<span class="c"># APPEARANCE</span>
+<span class="c"># ============================================</span>
+
+<span class="c"># Status bar position</span>
+<span class="k">set</span> -g status-position top
+
+<span class="c"># Status bar colors</span>
+<span class="k">set</span> -g status-style &#x27;bg=#13161d fg=#8b949e&#x27;
+<span class="k">set</span> -g status-left-length 20
+<span class="k">set</span> -g status-right-length 50
+
+<span class="c"># Status bar content</span>
+<span class="k">set</span> -g status-left &#x27;#[fg=#00e68a,bold] #S #[fg=#30363d]│ &#x27;
+<span class="k">set</span> -g status-right &#x27;#[fg=#30363d]│#[fg=#8b949e] %H:%M #[fg=#30363d]│#[fg=#8b949e] %d-%b-%y &#x27;
+
+<span class="c"># Window status</span>
+<span class="k">setw</span> -g window-status-format &#x27; #I:#W &#x27;
+<span class="k">setw</span> -g window-status-current-format &#x27;#[fg=#00e68a,bold] #I:#W &#x27;
+
+<span class="c"># Pane border colors</span>
+<span class="k">set</span> -g pane-border-style &#x27;fg=#30363d&#x27;
+<span class="k">set</span> -g pane-active-border-style &#x27;fg=#00e68a&#x27;
+
+<span class="c"># Message styling</span>
+<span class="k">set</span> -g message-style &#x27;bg=#00e68a fg=#000000 bold&#x27;
+
+<span class="c"># ============================================</span>
+<span class="c"># COPY MODE</span>
+<span class="c"># ============================================</span>
+
+<span class="c"># Use vi keys</span>
+<span class="k">setw</span> -g mode-keys vi
+
+<span class="c"># Vi-style copy bindings</span>
+<span class="k">bind</span> -T copy-mode-vi v send -X begin-selection
+<span class="k">bind</span> -T copy-mode-vi y send -X copy-pipe-and-cancel &quot;pbcopy&quot;  <span class="c"># macOS</span>
+<span class="c"># bind -T copy-mode-vi y send -X copy-pipe-and-cancel &quot;xclip -selection clipboard -i&quot;  # Linux</span>
+
+
+<span class="c"># Smart pane switching with awareness of Vim splits</span>
+is_vim=&quot;ps -o state= -o comm= -t &#x27;#{pane_tty}&#x27; \
+    | grep -iqE &#x27;^[^TXZ ]+ +(\\S+\\/)?g?(view|l?n?vim?x?|fzf)(diff)?$&#x27;&quot;
+<span class="k">bind-key</span> -n &#x27;C-h&#x27; if-shell &quot;$is_vim&quot; &#x27;send-keys C-h&#x27; &#x27;select-pane -L&#x27;
+<span class="k">bind-key</span> -n &#x27;C-j&#x27; if-shell &quot;$is_vim&quot; &#x27;send-keys C-j&#x27; &#x27;select-pane -D&#x27;
+<span class="k">bind-key</span> -n &#x27;C-k&#x27; if-shell &quot;$is_vim&quot; &#x27;send-keys C-k&#x27; &#x27;select-pane -U&#x27;
+<span class="k">bind-key</span> -n &#x27;C-l&#x27; if-shell &quot;$is_vim&quot; &#x27;send-keys C-l&#x27; &#x27;select-pane -R&#x27;
+
+<span class="k">bind-key</span> -T copy-mode-vi &#x27;C-h&#x27; select-pane -L
+<span class="k">bind-key</span> -T copy-mode-vi &#x27;C-j&#x27; select-pane -D
+<span class="k">bind-key</span> -T copy-mode-vi &#x27;C-k&#x27; select-pane -U
+<span class="k">bind-key</span> -T copy-mode-vi &#x27;C-l&#x27; select-pane -R
+
+<span class="c"># ============================================</span>
+<span class="c"># PLUGINS (via TPM)</span>
+<span class="c"># ============================================</span>
+
+<span class="c"># Install TPM first:</span>
+<span class="c"># git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm</span>
+
+<span class="k">set</span> -g @plugin &#x27;tmux-plugins/tpm&#x27;
+<span class="k">set</span> -g @plugin &#x27;tmux-plugins/tmux-sensible&#x27;
+<span class="k">set</span> -g @plugin &#x27;tmux-plugins/tmux-resurrect&#x27;
+<span class="k">set</span> -g @plugin &#x27;tmux-plugins/tmux-continuum&#x27;
+
+<span class="c"># Plugin settings</span>
+<span class="k">set</span> -g @resurrect-strategy-vim &#x27;session&#x27;
+<span class="k">set</span> -g @continuum-restore &#x27;on&#x27;
+
+<span class="c"># Initialize TPM (keep at bottom)</span>
+<span class="k">run</span> &#x27;~/.tmux/plugins/tpm/tpm&#x27;</code></pre>
+        </div>
+
+        <p>Die Rohdatei liegt unter <a href="../assets/tmux.conf">assets/tmux.conf</a> &ndash; direkt <code>curl</code>-bar, falls ich sie mal auf einem frischen Server brauche.</p>
+
+        <h2>Was hier warum drinsteht</h2>
+
+        <h3>Grundeinstellungen</h3>
+        <p><b><code>escape-time 0</code></b> ist die wichtigste Zeile der ganzen Datei, wenn man Vim benutzt. tmux wartet standardm&auml;&szlig;ig einen Moment nach einem <kbd>ESC</kbd>, um zu pr&uuml;fen, ob eine Escape-Sequenz folgt. In Vim f&uuml;hlt sich das an, als h&auml;nge der Wechsel in den Normal-Modus. Auf&nbsp;<code>0</code> gesetzt ist der Effekt sofort weg. Das <code>-s</code> ist dabei kein Tippfehler: Es ist eine Server-Option, keine Session-Option.</p>
+        <p><b><code>history-limit 50000</code></b> gilt nur f&uuml;r <em>neu</em> erzeugte Panes &ndash; bestehende behalten ihren alten Puffer, auch nach einem Reload. Wer das gerade erst gesetzt hat und sich wundert: Pane einmal neu &ouml;ffnen.</p>
+        <p><b><code>base-index 1</code></b> und <b><code>pane-base-index 1</code></b> verschieben die Nummerierung von Fenstern und Panes auf&nbsp;1, damit sie zur Tastaturreihe passt. <kbd>Ctrl-a</kbd> <kbd>1</kbd> ist das erste Fenster, nicht das zweite. Klingt nach einer Kleinigkeit, spart aber jeden Tag ein paar Fehlgriffe.</p>
+        <p><b><code>default-terminal</code> und <code>terminal-features</code></b> sorgen f&uuml;r echte 24-Bit-Farben. <code>tmux-256color</code> ist das korrekte terminfo f&uuml;r tmux&nbsp;&ge;&nbsp;2.9; die zweite Zeile sagt tmux, dass das <em>&auml;u&szlig;ere</em> Terminal (hier <code>xterm-256color</code>) RGB kann. Die Option <code>terminal-features</code> gibt es erst ab tmux&nbsp;3.2 &ndash; auf &auml;lteren Versionen lautet das &Auml;quivalent <code>set -ga terminal-overrides ",xterm-256color:Tc"</code>.</p>
+        <p><b><code>aggressive-resize on</code></b> ist nur relevant, wenn mehrere Clients an derselben Session h&auml;ngen: Ohne die Option richtet sich ein Fenster nach dem kleinsten <em>verbundenen</em> Client, mit ihr nur nach dem kleinsten, der dieses Fenster gerade auch wirklich anzeigt. Wer per <code>tmux attach</code> von zwei verschieden gro&szlig;en Terminals aus arbeitet, merkt den Unterschied sofort.</p>
+
+        <div class="box warn">
+          <span class="lab">Stolperfalle: fehlendes terminfo</span>
+          <p>Auf &auml;lteren macOS-Installationen fehlt der Eintrag <code>tmux-256color</code> in der Systemdatenbank, und tmux startet dann mit einer Fehlermeldung oder kaputten Farben. Pr&uuml;fen l&auml;sst sich das mit <code>infocmp tmux-256color</code>. Fehlt er, hilft ein aktuelles ncurses (<code>brew install ncurses</code>) oder ersatzweise <code>screen-256color</code> als <code>default-terminal</code>.</p>
+        </div>
+
+        <h3>Prefix auf Ctrl-a</h3>
+        <p>Der Standard-Prefix <kbd>Ctrl-b</kbd> verlangt eine unbequeme Handhaltung. <kbd>Ctrl-a</kbd> liegt direkt neben der Home-Row und ist der Klassiker aus GNU&nbsp;screen. Der Preis: In der Shell ist <kbd>Ctrl-a</kbd> normalerweise &bdquo;an den Zeilenanfang springen&ldquo;. Genau daf&uuml;r steht <code>bind C-a send-prefix</code> in der Datei &ndash; zweimal <kbd>Ctrl-a</kbd> schickt das Zeichen an die darunterliegende Anwendung durch. Nach kurzer Eingew&ouml;hnung tippt man das automatisch.</p>
+
+        <h3>Splits, die den Pfad behalten</h3>
+        <p><code>|</code> und <code>-</code> sind als Split-Tasten schlicht deshalb besser als <code>%</code> und <code>"</code>, weil sie aussehen wie das, was sie tun. Wichtiger ist aber das <code>-c "#{pane_current_path}"</code> an jedem Split und am neuen Fenster: Ohne das startet jedes neue Pane im Verzeichnis, aus dem die <em>Session</em> gestartet wurde &ndash; praktisch immer das falsche. Mit dem Zusatz &ouml;ffnet sich das neue Pane dort, wo man gerade steht.</p>
+
+        <h3>Navigation: zweimal dasselbe, mit Absicht</h3>
+        <p>Es gibt hier zwei Wege, das Pane zu wechseln, und das ist kein Versehen:</p>
+        <ul>
+          <li><b>Mit Prefix</b> (<kbd>Ctrl-a</kbd> <kbd>h/j/k/l</kbd>) &ndash; funktioniert immer, auch wenn ein Programm im Pane die Strg-Tasten selbst belegt.</li>
+          <li><b>Ohne Prefix</b> (<kbd>Ctrl-h/j/k/l</kbd>) &ndash; der schnelle Weg, dank <code>-n</code> ohne Prefix gebunden.</li>
+        </ul>
+        <p>Der Trick beim zweiten Weg ist die <code>is_vim</code>-Abfrage: Sie schaut per <code>ps</code> nach, welches Programm im Ziel-Pane l&auml;uft. Ist es Vim, Neovim oder fzf, wird der Tastendruck <em>durchgereicht</em>, sodass Vim seine eigenen Fenster wechselt; ist es etwas anderes, wechselt tmux das Pane. Ergebnis: eine einzige Tastenkombination bewegt den Cursor nahtlos &uuml;ber Vim-Splits und tmux-Panes hinweg, ohne dass man wissen muss, wo gerade die Grenze verl&auml;uft.</p>
+        <p>Die gro&szlig;geschriebenen Varianten <kbd>H/J/K/L</kbd> &auml;ndern die Gr&ouml;&szlig;e. Ihr <code>-r</code> macht sie wiederholbar: Nach einmal <kbd>Ctrl-a</kbd> gen&uuml;gt mehrfaches <kbd>L</kbd>, um weiter zu vergr&ouml;&szlig;ern &ndash; innerhalb des Zeitfensters von <code>repeat-time</code> (Standard: 500&nbsp;ms).</p>
+
+        <div class="box warn">
+          <span class="lab">Stolperfalle: Ctrl-l l&ouml;scht nicht mehr den Bildschirm</span>
+          <p>Weil <kbd>Ctrl-l</kbd> jetzt global von tmux abgefangen wird, kommt es nicht mehr in der Shell an. Wer die Gewohnheit behalten will, bindet den Bildschirm-Reset hinter den Prefix:</p>
+          <pre><code>bind C-l send-keys 'C-l'</code></pre>
+        </div>
+
+        <h3>Copy-Mode</h3>
+        <p><code>mode-keys vi</code> schaltet den Scroll- und Auswahlmodus auf Vim-Tasten um: <kbd>Ctrl-a</kbd> <kbd>[</kbd> startet ihn, danach navigiert man mit <kbd>h/j/k/l</kbd>, <kbd>/</kbd> sucht, <kbd>v</kbd> beginnt die Auswahl und <kbd>y</kbd> kopiert und verl&auml;sst den Modus.</p>
+        <p>Die <code>y</code>-Bindung reicht die Auswahl an die Systemzwischenablage weiter &ndash; und das ist die eine Zeile, die man beim Umzug auf ein anderes System <b>anpassen muss</b>. Aktiv ist die macOS-Variante mit <code>pbcopy</code>; darunter steht die Linux-Variante mit <code>xclip</code> auskommentiert bereit. Unter Wayland lautet sie entsprechend:</p>
+        <pre><code>bind -T copy-mode-vi y send -X copy-pipe-and-cancel "wl-copy"</code></pre>
+
+        <h3>Statuszeile</h3>
+        <p>Die Statuszeile sitzt oben (<code>status-position top</code>), weil unten meist schon die Prompt-Zeile Aufmerksamkeit beansprucht. Links steht der Session-Name, rechts Uhrzeit und Datum, dazwischen die Fenster &ndash; das aktive in Gr&uuml;n (<code>#00e68a</code>). Dieselbe Farbe markiert den Rahmen des aktiven Panes, was bei drei oder mehr Panes das schnellste Erkennungsmerkmal ist. Die <code>#[fg=...]</code>-Ausdr&uuml;cke sind tmux-eigene Formatanweisungen, keine Kommentare &ndash; das <code>#</code> hat hier eine andere Bedeutung als am Zeilenanfang.</p>
+
+        <h3>Plugins</h3>
+        <p>Vier Plugins, verwaltet vom <a href="https://github.com/tmux-plugins/tpm">Tmux Plugin Manager</a>:</p>
+        <ul>
+          <li><b>tmux-sensible</b> &ndash; eine Sammlung unstrittiger Grundeinstellungen. Sie &uuml;berschreibt nichts, was man selbst gesetzt hat, kollidiert also nicht mit den Zeilen weiter oben.</li>
+          <li><b>tmux-resurrect</b> &ndash; speichert und restauriert die komplette Session-Struktur (Fenster, Panes, Layouts, Arbeitsverzeichnisse) &uuml;ber Neustarts hinweg.</li>
+          <li><b>tmux-continuum</b> &ndash; automatisiert das: sichert im Hintergrund alle 15 Minuten und stellt dank <code>@continuum-restore 'on'</code> beim Start des tmux-Servers automatisch wieder her.</li>
+        </ul>
+        <p>Die Zeile <code>run '~/.tmux/plugins/tpm/tpm'</code> muss die letzte der Datei bleiben &ndash; TPM &uuml;berschreibt sonst Einstellungen, die danach kommen.</p>
+
+        <div class="box">
+          <span class="lab">Detail zu resurrect-strategy-vim</span>
+          <p><code>@resurrect-strategy-vim 'session'</code> stellt offene Vim-Instanzen samt ge&ouml;ffneter Dateien wieder her &ndash; setzt aber voraus, dass in Vim das Plugin <a href="https://github.com/tpope/vim-obsession">vim-obsession</a> installiert ist und eine Session-Datei schreibt. Ohne das startet Vim nach dem Restore einfach leer.</p>
+        </div>
+
+        <h2>Cheatsheet</h2>
+        <p>Prefix ist &uuml;berall <kbd>Ctrl-a</kbd>, im Folgenden als <kbd>C-a</kbd> geschrieben.</p>
+
+        <table class="sheet">
+          <caption>Eigene Bindungen</caption>
+          <thead>
+            <tr><th>Taste</th><th>Wirkung</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><kbd>C-a</kbd> <kbd>r</kbd></td><td class="was">Konfiguration neu laden</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>|</kbd></td><td class="was">Vertikal teilen, Pfad behalten</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>-</kbd></td><td class="was">Horizontal teilen, Pfad behalten</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>c</kbd></td><td class="was">Neues Fenster, Pfad behalten</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd></td><td class="was">Pane wechseln</td></tr>
+            <tr><td><kbd>C-h</kbd> <kbd>C-j</kbd> <kbd>C-k</kbd> <kbd>C-l</kbd></td><td class="was">Pane wechseln ohne Prefix &ndash; erkennt Vim und fzf und reicht die Taste dann durch</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>H</kbd> <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd></td><td class="was">Pane um 5 Zellen vergr&ouml;&szlig;ern, wiederholbar</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>C-a</kbd></td><td class="was">Ein echtes <kbd>Ctrl-a</kbd> an die Anwendung schicken</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>[</kbd> &rarr; <kbd>v</kbd> &rarr; <kbd>y</kbd></td><td class="was">Copy-Mode, Auswahl beginnen, in die Zwischenablage kopieren</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>I</kbd></td><td class="was">TPM: Plugins installieren</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>U</kbd></td><td class="was">TPM: Plugins aktualisieren</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>C-s</kbd> / <kbd>C-r</kbd></td><td class="was">resurrect: Session speichern / wiederherstellen</td></tr>
+          </tbody>
+        </table>
+
+        <table class="sheet">
+          <caption>Standardbindungen, die ich st&auml;ndig brauche</caption>
+          <thead>
+            <tr><th>Taste</th><th>Wirkung</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><kbd>C-a</kbd> <kbd>d</kbd></td><td class="was">Von der Session l&ouml;sen (detach) &ndash; l&auml;uft im Hintergrund weiter</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>1</kbd> &hellip; <kbd>9</kbd></td><td class="was">Zu Fenster&nbsp;n springen</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>,</kbd></td><td class="was">Fenster umbenennen</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>z</kbd></td><td class="was">Pane auf Vollbild zoomen und zur&uuml;ck</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>space</kbd></td><td class="was">N&auml;chstes Pane-Layout durchschalten</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>x</kbd></td><td class="was">Pane schlie&szlig;en (mit R&uuml;ckfrage)</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>s</kbd></td><td class="was">Session-&Uuml;bersicht zum Umschalten</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>?</kbd></td><td class="was">Alle aktiven Bindungen anzeigen</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Herkunft</h2>
+        <p>Das meiste hiervon ist &uuml;ber die Jahre aus Foren, Blogposts und fremden Dotfiles zusammengewachsen; die einzelnen Optionen sind Standard-tmux und geh&ouml;ren niemandem. Eine Ausnahme ist der Block mit der <code>is_vim</code>-Abfrage: Der stammt erkennbar aus <a href="https://github.com/christoomey/vim-tmux-navigator">christoomey/vim-tmux-navigator</a> und steht dort unter der MIT-Lizenz &ndash; verwendbar, aber mit Namensnennung. Deshalb steht sie hier. TPM und die drei Plugins von <a href="https://github.com/tmux-plugins">tmux-plugins</a> sind ebenfalls MIT-lizenziert und werden ohnehin separat geklont, nicht kopiert.</p>
+      </div>
+    </article>
+
+    <footer class="site-foot">
+      <a class="backlink" href="../index.html" style="margin-top:0">&larr; Zur&uuml;ck zur &Uuml;bersicht</a>
+      <nav class="foot-nav">
+        <a href="../impressum.html">Impressum</a>
+        <a href="../datenschutz.html">Datenschutz</a>
+      </nav>
+    </footer>
+  </div>
+
+<script>
+(function(){
+  var btn = document.getElementById('copyBtn');
+  var pre = document.getElementById('confCode');
+  if(!btn || !pre) return;
+
+  function feedback(text){
+    btn.textContent = text;
+    btn.classList.add('ok');
+    setTimeout(function(){
+      btn.textContent = btn.getAttribute('data-label');
+      btn.classList.remove('ok');
+    }, 1600);
+  }
+
+  btn.addEventListener('click', function(){
+    var text = pre.textContent;
+    if(navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(text).then(function(){
+        feedback('Kopiert');
+      }, function(){
+        feedback('Fehlgeschlagen');
+      });
+      return;
+    }
+    // Fallback fuer file:// und aeltere Browser
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch(e){ ok = false; }
+    document.body.removeChild(ta);
+    feedback(ok ? 'Kopiert' : 'Fehlgeschlagen');
+  });
+})();
+</script>
+</body>
+</html>
