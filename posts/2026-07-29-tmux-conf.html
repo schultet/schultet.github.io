@@ -51,6 +51,7 @@
   }
   .sheet td:first-child{white-space:nowrap;width:1%;padding-right:22px}
   .sheet td.was{color:var(--ink-soft)}
+  .fussnote{font-size:15px;color:var(--ink-faint);font-style:italic;margin:-10px 0 22px}
 
   kbd{
     font-family:"JetBrains Mono",monospace;font-size:.8em;
@@ -297,11 +298,76 @@ is_vim=&quot;ps -o state= -o comm= -t &#x27;#{pane_tty}&#x27; \
           <li><b>tmux-continuum</b> &ndash; automatisiert das: sichert im Hintergrund alle 15 Minuten und stellt dank <code>@continuum-restore 'on'</code> beim Start des tmux-Servers automatisch wieder her.</li>
         </ul>
         <p>Die Zeile <code>run '~/.tmux/plugins/tpm/tpm'</code> muss die letzte der Datei bleiben &ndash; TPM &uuml;berschreibt sonst Einstellungen, die danach kommen.</p>
+        <p>Wichtig: Diese f&uuml;nf Zeilen <em>installieren nichts</em>. Sie notieren nur, was installiert werden soll. Ohne den Schritt aus dem <a href="#plugins">n&auml;chsten Abschnitt</a> passiert genau gar nichts &ndash; und zwar ohne jede Fehlermeldung.</p>
+
+        <h2 id="plugins">Plugins zum Laufen bringen</h2>
+        <p>Das ist die Stelle, an der diese Konfiguration am leisesten scheitert. Fehlt <code>~/.tmux/plugins/tpm</code>, schl&auml;gt die letzte Zeile fehl &ndash; aber <code>run</code> bricht das Einlesen der Konfiguration nicht ab, und weil sie ohnehin die letzte ist, geht auch nichts verloren. tmux startet normal, alle eigenen Bindungen funktionieren, nur die vier Plugins sind stumm. Man kann das jahrelang &uuml;bersehen.</p>
+
+        <h3>Zuerst: laufen sie &uuml;berhaupt?</h3>
+        <p>Drei Kommandos, die das ohne Zweifel kl&auml;ren:</p>
+        <pre><code>ls ~/.tmux/plugins/                        # liegt TPM da?
+tmux list-keys -T prefix | grep -E ' (I|U) '   # hat TPM seine Tasten gebunden?
+tmux show -g status-interval               # 15 = tmux-Standard, 5 = sensible aktiv</code></pre>
+
+        <table class="sheet">
+          <caption>So liest man das Ergebnis</caption>
+          <thead>
+            <tr><th>Befund</th><th>Bedeutung</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>No such file or directory</code></td><td class="was">TPM ist nicht geklont &ndash; kein Plugin lief je</td></tr>
+            <tr><td>keine Treffer bei <kbd>I</kbd>/<kbd>U</kbd></td><td class="was">TPM wurde nie ausgef&uuml;hrt</td></tr>
+            <tr><td><code>status-interval 15</code></td><td class="was">tmux-Standardwert &ndash; tmux-sensible h&auml;tte hier <code>5</code> gesetzt</td></tr>
+            <tr><td><code>status-interval 5</code></td><td class="was">tmux-sensible ist aktiv, TPM l&auml;uft</td></tr>
+          </tbody>
+        </table>
+
+        <div class="box warn">
+          <span class="lab">Achtung, irref&uuml;hrend</span>
+          <p><code>tmux show -g</code> zeigt auch ohne installierte Plugins brav <code>@continuum-restore on</code> und <code>@resurrect-strategy-vim session</code> an. Das sieht nach einem Lebenszeichen aus, ist aber keins: <code>@</code>-Optionen sind blo&szlig;e Benutzeroptionen, die die Konfigurationsdatei selbst setzt. Sie beweisen nur, dass die Datei gelesen wurde &ndash; nicht, dass irgendein Plugin existiert.</p>
+          <p>Dasselbe gilt f&uuml;r <code>@plugin</code>: Alle vier Zeilen schreiben in <em>dieselbe</em> Option, es &uuml;berlebt also nur die letzte. TPM st&ouml;rt das nicht, weil es die Konfigurationsdatei als Text durchsucht statt Optionen zu lesen.</p>
+        </div>
+
+        <h3>Installieren</h3>
+        <p>TPM klonen, Konfiguration neu einlesen, Plugins holen:</p>
+        <pre><code>git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+tmux source-file ~/.tmux.conf</code></pre>
+        <p>Dann in einer laufenden tmux-Session <kbd>Ctrl-a</kbd> gefolgt von <kbd>I</kbd> dr&uuml;cken &ndash; gro&szlig;es I, also mit Shift. Der Bildschirm friert kurz ein, w&auml;hrend TPM die Repositories klont; danach meldet er <em>&bdquo;Done, press ESC to continue&ldquo;</em>. Auf einem frischen Rechner ohne interaktiven Schritt geht es auch direkt:</p>
+        <pre><code>~/.tmux/plugins/tpm/bin/install_plugins</code></pre>
+        <p>Danach sollten vier Ordner dastehen:</p>
+        <pre><code>$ ls ~/.tmux/plugins/
+tmux-continuum  tmux-resurrect  tmux-sensible  tpm</code></pre>
+
+        <h3>Was man dann hat</h3>
+        <table class="sheet">
+          <caption>Tasten, die erst nach der Installation existieren</caption>
+          <thead>
+            <tr><th>Taste</th><th>Wirkung</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><kbd>C-a</kbd> <kbd>I</kbd></td><td class="was">Plugins aus der Konfiguration installieren</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>U</kbd></td><td class="was">Installierte Plugins aktualisieren</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>M-u</kbd></td><td class="was">Plugins entfernen, die nicht mehr in der Konfiguration stehen</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>C-s</kbd></td><td class="was">Session-Struktur jetzt sichern (resurrect)</td></tr>
+            <tr><td><kbd>C-a</kbd> <kbd>C-r</kbd></td><td class="was">Zuletzt gesicherten Stand wiederherstellen</td></tr>
+          </tbody>
+        </table>
+        <p>Gesichert wird nach <code>~/.local/share/tmux/resurrect/</code> (&auml;ltere Versionen: <code>~/.tmux/resurrect/</code>) &ndash; eine Textdatei pro Snapshot, die man auch von Hand ansehen kann.</p>
+
+        <div class="box warn">
+          <span class="lab">Wenn es nicht klappt</span>
+          <p><b><kbd>C-a</kbd> <kbd>I</kbd> tut nichts.</b> Entweder ist TPM nicht geklont, oder die Konfiguration wurde nach dem Klonen nicht neu eingelesen, oder <code>run '~/.tmux/plugins/tpm/tpm'</code> ist nicht die letzte Zeile der Datei.</p>
+          <p><b>continuum stellt nichts wieder her.</b> <code>@continuum-restore 'on'</code> greift nur, wenn der tmux-<em>Server</em> frisch startet &ndash; nicht beim <code>attach</code> an eine bereits laufende Session. Ob &uuml;berhaupt schon gesichert wurde, verr&auml;t <code>tmux show -g @continuum-save-last-timestamp</code>; ist die Option leer, gab es noch keinen Speicherlauf.</p>
+          <p><b>Nach dem Restore ist Vim leer.</b> Daf&uuml;r fehlt <a href="https://github.com/tpope/vim-obsession">vim-obsession</a> &ndash; siehe unten.</p>
+        </div>
 
         <div class="box">
           <span class="lab">Detail zu resurrect-strategy-vim</span>
           <p><code>@resurrect-strategy-vim 'session'</code> stellt offene Vim-Instanzen samt ge&ouml;ffneter Dateien wieder her &ndash; setzt aber voraus, dass in Vim das Plugin <a href="https://github.com/tpope/vim-obsession">vim-obsession</a> installiert ist und eine Session-Datei schreibt. Ohne das startet Vim nach dem Restore einfach leer.</p>
         </div>
+
+        <h3>Oder eben bleiben lassen</h3>
+        <p>Die Plugins sind Komfort, kein Fundament. Wer sie nicht will, l&ouml;scht die vier <code>@plugin</code>-Zeilen, die beiden <code>@</code>-Einstellungen darunter und die <code>run</code>-Zeile am Ende &ndash; alles andere in dieser Konfiguration funktioniert unver&auml;ndert weiter, weil es reines tmux ist. Das ist eine v&ouml;llig legitime Variante, und sie hat den Vorteil, dass die Datei dann ohne jede externe Abh&auml;ngigkeit auf jedem Rechner sofort tut, was sie soll.</p>
 
         <h2>Cheatsheet</h2>
         <p>Prefix ist &uuml;berall <kbd>Ctrl-a</kbd>, im Folgenden als <kbd>C-a</kbd> geschrieben.</p>
@@ -326,6 +392,7 @@ is_vim=&quot;ps -o state= -o comm= -t &#x27;#{pane_tty}&#x27; \
             <tr><td><kbd>C-a</kbd> <kbd>C-s</kbd> / <kbd>C-r</kbd></td><td class="was">resurrect: Session speichern / wiederherstellen</td></tr>
           </tbody>
         </table>
+        <p class="fussnote">Die letzten drei Zeilen kommen nicht aus dieser Datei, sondern von den Plugins &ndash; sie existieren erst, wenn <a href="#plugins">TPM installiert</a> ist.</p>
 
         <table class="sheet">
           <caption>Standardbindungen, die ich st&auml;ndig brauche</caption>
